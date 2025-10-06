@@ -1,0 +1,15 @@
+{
+    "name": "your-vendor-name/your-project-name",
+    "description": "A brief description of your project.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "your@example.com"
+        }
+    ],
+    "require": {
+        "tecnickcom/tcpdf": "^6.10"
+    }
+}
