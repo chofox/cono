@@ -12,6 +12,7 @@ Sistema web para la gestión y registro de entregas de insumos en la Dirección 
 - **Sistema de reportes** con filtros avanzados y exportación a Excel
 - **Módulo integral de mantenimiento** para recepción, diagnóstico, ejecución, entrega y seguimiento de equipos institucionales
 - **Dashboard responsivo** con estadísticas en tiempo real
+- **Interfaz moderna** basada en Bulma con navegación unificada para módulos y reportes
 
 ## 📋 Requisitos del Sistema
 
@@ -99,17 +100,13 @@ cono/
 │   └── Auth.php              # Clase de autenticación
 ├── includes/
 │   └── functions.php         # Funciones utilitarias
-├── ajax/
-│   └── detalle_conocimiento.php  # Compatibilidad: redirige al módulo de conocimientos
 ├── tcpdf/                    # Librería TCPDF
 ├── database.sql              # Esquema de base de datos
 ├── login.php                 # Página de login
 ├── logout.php                # Cerrar sesión
 ├── dashboard.php             # Panel principal
-├── nuevo_conocimiento.php    # Compatibilidad: redirige al módulo de conocimientos
 ├── usuarios.php              # Gestión de usuarios
 ├── insumos.php              # Gestión de insumos
-├── reportes.php             # Compatibilidad: redirige al módulo de conocimientos
 ├── modules/
 │   ├── conocimientos/
 │   │   ├── index.php                # Listado principal y filtros del módulo
@@ -134,8 +131,6 @@ cono/
 │       │   └── reportes.php         # Reportes y exportaciones del módulo
 │       └── services/
 │           └── MantenimientoRepository.php  # Acceso a datos del módulo
-├── generar_pdf.php          # Compatibilidad: redirige al módulo de conocimientos
-├── exportar_excel.php       # Compatibilidad: redirige al módulo de conocimientos
 └── README.md                # Este archivo
 ```
 

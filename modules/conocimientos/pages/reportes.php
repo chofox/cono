@@ -631,7 +631,7 @@ $csrf_token = generate_csrf_token();
             $('#detalleModal').modal('show');
             
             $.ajax({
-                url: 'ajax/detalle_conocimiento.php',
+                url: '<?php echo APP_URL; ?>/modules/conocimientos/ajax/detalle.php',
                 method: 'GET',
                 data: { id: conocimientoId },
                 success: function(response) {

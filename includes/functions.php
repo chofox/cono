@@ -187,18 +187,28 @@ function log_user_activity($user_id, $action, $details = '') {
  * Función para mostrar mensajes flash
  */
 function show_flash_message() {
-    if (isset($_SESSION['flash_message'])) {
-        $message = $_SESSION['flash_message'];
-        $type = $_SESSION['flash_type'] ?? 'info';
-        
-        echo "<div class='alert alert-{$type} alert-dismissible fade show' role='alert'>
-                {$message}
-                <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
-              </div>";
-        
-        unset($_SESSION['flash_message']);
-        unset($_SESSION['flash_type']);
+    if (!isset($_SESSION['flash_message'])) {
+        return;
     }
+
+    $message = $_SESSION['flash_message'];
+    $type = $_SESSION['flash_type'] ?? 'info';
+
+    $classMap = [
+        'success' => 'is-success',
+        'danger' => 'is-danger',
+        'warning' => 'is-warning',
+        'info' => 'is-info',
+    ];
+
+    $bulmaClass = $classMap[$type] ?? 'is-info';
+
+    echo "<div class='notification {$bulmaClass}'>" .
+        "<button class='delete' onclick=\"this.parentElement.remove()\" aria-label='Cerrar notificación'></button>" .
+        $message .
+        "</div>";
+
+    unset($_SESSION['flash_message'], $_SESSION['flash_type']);
 }
 
 /**
@@ -340,26 +350,6 @@ function truncate_text($text, $length = 100, $suffix = '...') {
  */
 function debug_log($message, $level = 'INFO') {
     error_log("[DEBUG] [{$level}] " . $message);
-}
-
-/**
- * Función para obtener usuarios por rol
- */
-function get_users_by_role($role) {
-    try {
-        $database = new Database();
-        $conn = $database->getConnection();
-
-        $query = "SELECT u.id, u.nombre_completo FROM usuarios u JOIN roles r ON u.rol_id = r.id WHERE r.nombre = :role ORDER BY u.nombre_completo";
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':role', $role);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Error obteniendo usuarios por rol ({$role}): " . $e->getMessage());
-        return [];
-    }
 }
 
 /**
