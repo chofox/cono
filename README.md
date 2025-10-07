@@ -110,14 +110,19 @@ cono/
 ├── usuarios.php              # Gestión de usuarios
 ├── insumos.php              # Gestión de insumos
 ├── reportes.php             # Sistema de reportes de conocimientos
-├── reporte.php              # Reportes del módulo de mantenimiento
-├── mantenimientos.php       # Panel integral de mantenimientos
-├── recepcion_nueva.php      # Registro de recepción de equipos
-├── diagnostico.php          # Registro del diagnóstico técnico
-├── mantenimiento.php        # Ejecución y control del mantenimiento
-├── entrega.php              # Entrega de equipos y cierre
-├── seguimiento.php          # Seguimientos post-servicio
-├── estado.php               # Consulta pública del estado del mantenimiento
+├── modules/
+│   └── mantenimiento/
+│       ├── index.php                # Panel integral de mantenimientos
+│       ├── pages/
+│       │   ├── recepcion.php        # Registro de recepción de equipos
+│       │   ├── diagnostico.php      # Registro del diagnóstico técnico
+│       │   ├── ejecucion.php        # Ejecución y control del mantenimiento
+│       │   ├── entrega.php          # Entrega de equipos y cierre
+│       │   ├── seguimiento.php      # Seguimientos post-servicio
+│       │   ├── estado.php           # Consulta pública del estado del mantenimiento
+│       │   └── reportes.php         # Reportes y exportaciones del módulo
+│       └── services/
+│           └── MantenimientoRepository.php  # Acceso a datos del módulo
 ├── generar_pdf.php          # Generación de PDFs
 ├── exportar_excel.php       # Exportación a Excel
 └── README.md                # Este archivo

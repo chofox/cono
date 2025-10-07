@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/MantenimientoRepository.php';
-require_once 'includes/functions.php';
+require_once dirname(__DIR__, 3) . '/config/database.php';
+require_once dirname(__DIR__, 3) . '/classes/Auth.php';
+require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
+require_once dirname(__DIR__, 3) . '/includes/functions.php';
 
 require_auth();
 require_any_role(['Supervisor', 'Técnico', 'Administrador']);
@@ -14,14 +14,14 @@ $repository = new MantenimientoRepository();
 
 $folio = $_GET['folio'] ?? '';
 if ($folio === '') {
-    header('Location: mantenimientos.php?error=folio_requerido');
+    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php?error=folio_requerido');
     exit();
 }
 
 $mantenimiento = $repository->obtenerMantenimientoPorFolio($folio);
 if (!$mantenimiento) {
     set_flash_message('No se encontró el mantenimiento solicitado.', 'danger');
-    header('Location: mantenimientos.php');
+    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php');
     exit();
 }
 
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             set_flash_message('Diagnóstico registrado correctamente.', 'success');
-            header('Location: mantenimiento.php?folio=' . urlencode($folio));
+            header('Location: ' . APP_URL . '/modules/mantenimiento/pages/ejecucion.php?folio=' . urlencode($folio));
             exit();
         } catch (Throwable $th) {
             error_log('Error guardando diagnóstico: ' . $th->getMessage());
@@ -94,14 +94,14 @@ $page_title = 'Diagnóstico Técnico';
     <title>Diagnóstico - <?php echo APP_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-<?php include_once 'includes/navbar.php'; ?>
+<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-            <?php include 'includes/sidebar.php'; ?>
+            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -110,10 +110,10 @@ $page_title = 'Diagnóstico Técnico';
                     <p class="text-muted mb-0">Folio <?php echo htmlspecialchars($mantenimiento['folio']); ?> - <?php echo htmlspecialchars($mantenimiento['equipo_descripcion']); ?></p>
                 </div>
                 <div class="btn-group">
-                    <a href="mantenimientos.php" class="btn btn-outline-secondary">
+                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Regresar
                     </a>
-                    <a href="estado.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" class="btn btn-outline-secondary" target="_blank">
+                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/estado.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" class="btn btn-outline-secondary" target="_blank">
                         <i class="fas fa-external-link-alt me-2"></i>Vista pública
                     </a>
                 </div>

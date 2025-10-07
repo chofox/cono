@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/MantenimientoRepository.php';
-require_once 'includes/functions.php';
+require_once dirname(__DIR__, 2) . '/config/database.php';
+require_once dirname(__DIR__, 2) . '/classes/Auth.php';
+require_once __DIR__ . '/services/MantenimientoRepository.php';
+require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 require_auth();
 require_any_role(['Recepcionista', 'Supervisor', 'Técnico', 'Administrador']);
@@ -36,14 +36,14 @@ $page_title = 'Mantenimientos';
     <title>Mantenimientos - <?php echo APP_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-<?php include_once 'includes/navbar.php'; ?>
+<?php include_once dirname(__DIR__, 2) . '/includes/navbar.php'; ?>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-            <?php include 'includes/sidebar.php'; ?>
+            <?php include dirname(__DIR__, 2) . '/includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -52,7 +52,7 @@ $page_title = 'Mantenimientos';
                     <p class="text-muted">Gestione el ciclo completo de mantenimiento institucional.</p>
                 </div>
                 <?php if (has_any_role(['Recepcionista', 'Administrador'])): ?>
-                    <a href="recepcion_nueva.php" class="btn btn-primary">
+                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/recepcion.php" class="btn btn-primary">
                         <i class="fas fa-plus-circle me-2"></i>Nuevo ingreso
                     </a>
                 <?php endif; ?>
@@ -64,7 +64,7 @@ $page_title = 'Mantenimientos';
                 <div class="card-header bg-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <h2 class="h5 mb-0">Filtros</h2>
-                        <a href="mantenimientos.php" class="btn btn-sm btn-outline-secondary">
+                        <a href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-undo"></i> Limpiar
                         </a>
                     </div>
@@ -172,19 +172,19 @@ $page_title = 'Mantenimientos';
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <?php if (has_any_role(['Supervisor', 'Técnico', 'Administrador'])): ?>
-                                                        <a class="btn btn-outline-secondary" href="diagnostico.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
+                                                        <a class="btn btn-outline-secondary" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/diagnostico.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
                                                             <i class="fas fa-stethoscope"></i>
                                                         </a>
-                                                        <a class="btn btn-outline-secondary" href="mantenimiento.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
+                                                        <a class="btn btn-outline-secondary" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/ejecucion.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
                                                             <i class="fas fa-tools"></i>
                                                         </a>
                                                     <?php endif; ?>
                                                     <?php if (has_any_role(['Recepcionista', 'Administrador'])): ?>
-                                                        <a class="btn btn-outline-secondary" href="entrega.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
+                                                        <a class="btn btn-outline-secondary" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/entrega.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>">
                                                             <i class="fas fa-truck"></i>
                                                         </a>
                                                     <?php endif; ?>
-                                                    <a class="btn btn-outline-secondary" href="estado.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" target="_blank">
+                                                    <a class="btn btn-outline-secondary" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/estado.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" target="_blank">
                                                         <i class="fas fa-external-link-alt"></i>
                                                     </a>
                                                 </div>

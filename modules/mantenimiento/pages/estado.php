@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once 'config/database.php';
-require_once 'classes/MantenimientoRepository.php';
-require_once 'includes/functions.php';
+require_once dirname(__DIR__, 3) . '/config/database.php';
+require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
+require_once dirname(__DIR__, 3) . '/includes/functions.php';
 
 $repository = new MantenimientoRepository();
 
@@ -46,7 +46,7 @@ $page_title = 'Consulta de estado';
     <title>Estado de mantenimiento - <?php echo APP_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
     <style>
         body { background-color: #f5f7fb; }
     </style>
@@ -54,7 +54,7 @@ $page_title = 'Consulta de estado';
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container">
-        <a class="navbar-brand" href="index.php">
+        <a class="navbar-brand" href="<?php echo APP_URL; ?>/index.php">
             <i class="fas fa-tools me-2 text-primary"></i>Seguimiento de Mantenimiento
         </a>
     </div>

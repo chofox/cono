@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/MantenimientoRepository.php';
-require_once 'includes/functions.php';
+require_once dirname(__DIR__, 3) . '/config/database.php';
+require_once dirname(__DIR__, 3) . '/classes/Auth.php';
+require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
+require_once dirname(__DIR__, 3) . '/includes/functions.php';
 
 require_auth();
 require_any_role(['Supervisor', 'Administrador']);
@@ -53,8 +53,8 @@ if ($export === 'excel') {
 
 if ($export === 'pdf') {
     $tcpdfPaths = [
-        'vendor/tecnickcom/tcpdf/tcpdf.php',
-        'tcpdf/tcpdf.php',
+        dirname(__DIR__, 3) . '/vendor/tecnickcom/tcpdf/tcpdf.php',
+        dirname(__DIR__, 3) . '/tcpdf/tcpdf.php',
     ];
     $loaded = false;
     foreach ($tcpdfPaths as $path) {
@@ -110,14 +110,14 @@ $page_title = 'Reportes de Mantenimiento';
     <title>Reportes - <?php echo APP_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-<?php include_once 'includes/navbar.php'; ?>
+<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-            <?php include 'includes/sidebar.php'; ?>
+            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -126,10 +126,10 @@ $page_title = 'Reportes de Mantenimiento';
                     <p class="text-muted mb-0">Genere reportes filtrables y exportables en PDF o Excel.</p>
                 </div>
                 <div class="btn-group">
-                    <a href="reporte.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'pdf'])); ?>" class="btn btn-outline-secondary">
+                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'pdf'])); ?>" class="btn btn-outline-secondary">
                         <i class="fas fa-file-pdf me-2"></i>Exportar PDF
                     </a>
-                    <a href="reporte.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'excel'])); ?>" class="btn btn-outline-secondary">
+                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'excel'])); ?>" class="btn btn-outline-secondary">
                         <i class="fas fa-file-excel me-2"></i>Exportar Excel
                     </a>
                 </div>

@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/MantenimientoRepository.php';
-require_once 'includes/functions.php';
+require_once dirname(__DIR__, 3) . '/config/database.php';
+require_once dirname(__DIR__, 3) . '/classes/Auth.php';
+require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
+require_once dirname(__DIR__, 3) . '/includes/functions.php';
 
 require_auth();
 require_any_role(['Recepcionista', 'Administrador']);
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'qr' => $qrUrl,
             ];
 
-            header('Location: diagnostico.php?folio=' . urlencode($resultado['folio']));
+            header('Location: ' . APP_URL . '/modules/mantenimiento/pages/diagnostico.php?folio=' . urlencode($resultado['folio']));
             exit();
         } catch (Throwable $th) {
             error_log('Error registrando mantenimiento: ' . $th->getMessage());
@@ -90,14 +90,14 @@ $page_title = 'Recepción de Equipo';
     <title>Recepción de Equipo - <?php echo APP_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-<?php include_once 'includes/navbar.php'; ?>
+<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-            <?php include 'includes/sidebar.php'; ?>
+            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -105,7 +105,7 @@ $page_title = 'Recepción de Equipo';
                     <h1 class="h3 mb-0">Registrar recepción de equipo</h1>
                     <p class="text-muted">Ingrese los datos básicos para iniciar el proceso de mantenimiento.</p>
                 </div>
-                <a href="mantenimientos.php" class="btn btn-outline-secondary">
+                <a href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Volver al listado
                 </a>
             </div>

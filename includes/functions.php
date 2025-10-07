@@ -463,7 +463,7 @@ function mantenimiento_tipo_options(): array {
 }
 
 function generar_url_estado_publico(string $token): string {
-    return APP_URL . '/estado.php?token=' . urlencode($token);
+    return APP_URL . '/modules/mantenimiento/pages/estado.php?token=' . urlencode($token);
 }
 
 function generar_qr_url(string $token): string {

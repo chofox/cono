@@ -27,16 +27,16 @@
       <?php if (function_exists('has_any_role') ? has_any_role(['Recepcionista', 'Supervisor', 'Técnico', 'Administrador']) : true): ?>
         <hr class="my-3">
         <h6 class="text-muted text-uppercase mb-3">Mantenimiento</h6>
-        <a class="nav-link" href="mantenimientos.php">
+        <a class="nav-link" href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php">
           <i class="fas fa-tools me-2"></i>Panel de Mantenimientos
         </a>
         <?php if (function_exists('has_any_role') ? has_any_role(['Recepcionista', 'Administrador']) : true): ?>
-          <a class="nav-link" href="recepcion_nueva.php">
+          <a class="nav-link" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/recepcion.php">
             <i class="fas fa-inbox me-2"></i>Recepción de Equipo
           </a>
         <?php endif; ?>
         <?php if (function_exists('has_any_role') ? has_any_role(['Supervisor', 'Administrador']) : true): ?>
-          <a class="nav-link" href="reporte.php">
+          <a class="nav-link" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php">
             <i class="fas fa-file-alt me-2"></i>Reportes Mantenimiento
           </a>
         <?php endif; ?>
