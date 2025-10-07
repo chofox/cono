@@ -31,14 +31,14 @@ if (!isset($current_user)) {
 
         <?php if (($current_user['rol'] ?? '') === 'Técnico' || ($current_user['rol'] ?? '') === 'Administrador'): ?>
           <li class="nav-item">
-            <a class="nav-link" href="nuevo_conocimiento.php">
+            <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/crear.php">
               <i class="fas fa-file-alt me-2"></i>Nuevo Conocimiento
             </a>
           </li>
         <?php endif; ?>
 
         <li class="nav-item">
-          <a class="nav-link" href="reportes.php">
+          <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/reportes.php">
             <i class="fas fa-chart-line me-2"></i>Reportes
           </a>
         </li>

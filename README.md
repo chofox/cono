@@ -100,17 +100,28 @@ cono/
 ├── includes/
 │   └── functions.php         # Funciones utilitarias
 ├── ajax/
-│   └── detalle_conocimiento.php  # Endpoint para detalles
+│   └── detalle_conocimiento.php  # Compatibilidad: redirige al módulo de conocimientos
 ├── tcpdf/                    # Librería TCPDF
 ├── database.sql              # Esquema de base de datos
 ├── login.php                 # Página de login
 ├── logout.php                # Cerrar sesión
 ├── dashboard.php             # Panel principal
-├── nuevo_conocimiento.php    # Registro de entregas
+├── nuevo_conocimiento.php    # Compatibilidad: redirige al módulo de conocimientos
 ├── usuarios.php              # Gestión de usuarios
 ├── insumos.php              # Gestión de insumos
-├── reportes.php             # Sistema de reportes de conocimientos
+├── reportes.php             # Compatibilidad: redirige al módulo de conocimientos
 ├── modules/
+│   ├── conocimientos/
+│   │   ├── index.php                # Listado principal y filtros del módulo
+│   │   ├── ajax/
+│   │   │   └── detalle.php          # Endpoint AJAX para el modal de detalle
+│   │   └── pages/
+│   │       ├── crear.php            # Registro de nuevas entregas
+│   │       ├── editar.php           # Edición de conocimientos en borrador
+│   │       ├── ver.php              # Vista detallada
+│   │       ├── reportes.php         # Consolidados y filtros avanzados
+│   │       ├── exportar_excel.php   # Exportación a Excel
+│   │       └── generar_pdf.php      # Generación de PDFs
 │   └── mantenimiento/
 │       ├── index.php                # Panel integral de mantenimientos
 │       ├── pages/
@@ -123,8 +134,8 @@ cono/
 │       │   └── reportes.php         # Reportes y exportaciones del módulo
 │       └── services/
 │           └── MantenimientoRepository.php  # Acceso a datos del módulo
-├── generar_pdf.php          # Generación de PDFs
-├── exportar_excel.php       # Exportación a Excel
+├── generar_pdf.php          # Compatibilidad: redirige al módulo de conocimientos
+├── exportar_excel.php       # Compatibilidad: redirige al módulo de conocimientos
 └── README.md                # Este archivo
 ```
 

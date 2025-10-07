@@ -139,12 +139,12 @@ $page_title = "Dashboard";
                             </a>
                             
                             <?php if (has_role('Técnico') || has_role('Administrador')): ?>
-                            <a class="nav-link" href="nuevo_conocimiento.php">
+                            <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/crear.php">
                                 <i class="fas fa-plus-circle me-2"></i>Nuevo Conocimiento
                             </a>
                             <?php endif; ?>
                             
-                            <a class="nav-link" href="conocimientos.php">
+                            <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/index.php">
                                 <i class="fas fa-list me-2"></i>Ver Conocimientos
                             </a>
                             
@@ -252,12 +252,12 @@ $page_title = "Dashboard";
                                     </h5>
                                     
                                     <?php if (has_role('Técnico') || has_role('Administrador')): ?>
-                                    <a href="nuevo_conocimiento.php" class="btn btn-outline-primary w-100 mb-2 d-flex align-items-center justify-content-center">
+                                    <a href="<?php echo APP_URL; ?>/modules/conocimientos/pages/crear.php" class="btn btn-outline-primary w-100 mb-2 d-flex align-items-center justify-content-center">
                                         <i class="fas fa-plus me-2"></i>Nuevo Conocimiento
                                     </a>
                                     <?php endif; ?>
                                     
-                                    <a href="conocimientos.php" class="btn btn-outline-info w-100 mb-2 d-flex align-items-center justify-content-center">
+                                    <a href="<?php echo APP_URL; ?>/modules/conocimientos/index.php" class="btn btn-outline-info w-100 mb-2 d-flex align-items-center justify-content-center">
                                         <i class="fas fa-search me-2"></i>Buscar Conocimientos
                                     </a>
                                     
@@ -295,7 +295,7 @@ $page_title = "Dashboard";
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <div>
                                                     <h6 class="mb-1">
-                                                        <a href="ver_conocimiento.php?id=<?php echo $conocimiento['id']; ?>" 
+                                                        <a href="<?php echo APP_URL; ?>/modules/conocimientos/pages/ver.php?id=<?php echo $conocimiento['id']; ?>" 
                                                            class="text-decoration-none text-dark">
                                                            Conocimiento #<?php echo escape_html($conocimiento['numero_conocimiento']); ?>
                                                         </a>
@@ -317,7 +317,7 @@ $page_title = "Dashboard";
                                     <?php endif; ?>
                                 </div>
                                 <div class="p-3 text-center border-top">
-                                    <a href="conocimientos.php" class="btn btn-outline-primary btn-sm">
+                                    <a href="<?php echo APP_URL; ?>/modules/conocimientos/index.php" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-list me-2"></i>Ver Todos los Conocimientos
                                     </a>
                                 </div>

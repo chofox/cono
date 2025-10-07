@@ -21,6 +21,6 @@ El proyecto implementa un sistema web en PHP para registrar y gestionar entregas
 4. Reforzar el proceso de provisión inicial: exigir cambio de contraseña al primer acceso, documentar políticas de complejidad y retirar credenciales predeterminadas del README público o moverlas a documentación privada.【F:README.md†L83-L90】
 
 ## Próximos pasos sugeridos
-- Auditar el resto de endpoints (`nuevo_conocimiento.php`, `reportes.php`, etc.) para confirmar que todas las operaciones de escritura usan consultas preparadas y que validan autorización por rol.
+- Auditar el resto de endpoints (`modules/conocimientos/pages/crear.php`, `modules/conocimientos/pages/reportes.php`, etc.) para confirmar que todas las operaciones de escritura usan consultas preparadas y que validan autorización por rol.
 - Añadir pruebas automatizadas mínimas (por ejemplo, pruebas de integración para el flujo de login y generación de números de conocimiento) que faciliten detectar regresiones en futuras modificaciones.
 - Implementar pipeline de despliegue que gestione variables sensibles mediante un gestor de secretos y ejecute verificaciones estáticas (linters/analizadores de seguridad) antes de publicar.

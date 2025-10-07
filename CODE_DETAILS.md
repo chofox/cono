@@ -1,7 +1,7 @@
 # Detalles del Código del Sistema
 
 ## Arquitectura general
-- Aplicación PHP multipágina organizada por módulos que arrancan sesión, cargan la configuración y reutilizan helpers comunes antes de renderizar HTML con Bootstrap/Font Awesome. Ejemplos representativos incluyen el dashboard y el listado de conocimientos, que invocan `config/database.php`, `classes/Auth.php` e `includes/functions.php` para preparar datos antes de imprimir la vista.【F:dashboard.php†L7-L105】【F:conocimientos.php†L7-L150】
+- Aplicación PHP multipágina organizada por módulos que arrancan sesión, cargan la configuración y reutilizan helpers comunes antes de renderizar HTML con Bootstrap/Font Awesome. Ejemplos representativos incluyen el dashboard y el listado de conocimientos, que invocan `config/database.php`, `classes/Auth.php` e `includes/functions.php` para preparar datos antes de imprimir la vista.【F:dashboard.php†L7-L105】【F:modules/conocimientos/index.php†L7-L150】
 - El front-end se apoya en CDN externos para Bootstrap 5, Font Awesome y Chart.js además de una hoja de estilos propia (`assets/css/style.css`) que define la identidad visual del sistema.【F:dashboard.php†L117-L170】【F:assets/css/style.css†L3-L139】
 
 ## Configuración base
@@ -18,9 +18,9 @@
 
 ## Módulos funcionales clave
 - **Dashboard**: muestra métricas agregadas (total, año y mes en curso, usuarios/insumos activos) y recientes conocimientos, filtrando por rol cuando no es administrador.【F:dashboard.php†L25-L101】
-- **Gestión de conocimientos**: `conocimientos.php` aplica filtros por texto, año, mes y estado, respeta las restricciones de rol y pagina los resultados con metadatos de entregante/receptor.【F:conocimientos.php†L25-L150】
-- **Registro de entregas**: `nuevo_conocimiento.php` arma los catálogos necesarios, valida insumos y datos obligatorios, inserta cabecera/detalle dentro de una transacción y abre automáticamente el PDF generado por el trigger de numeración al concluir.【F:nuevo_conocimiento.php†L7-L200】
-- **Detalle y reportes**: `generar_pdf.php` produce el comprobante oficial con TCPDF validando permisos y adjuntando firmas opcionales; `exportar_excel.php` arma un CSV filtrable por múltiples criterios y restringe el acceso a roles administrativos o de RRHH.【F:generar_pdf.php†L1-L172】【F:exportar_excel.php†L1-L160】
+- **Gestión de conocimientos**: `modules/conocimientos/index.php` aplica filtros por texto, año, mes y estado, respeta las restricciones de rol y pagina los resultados con metadatos de entregante/receptor.【F:modules/conocimientos/index.php†L25-L150】
+- **Registro de entregas**: `modules/conocimientos/pages/crear.php` arma los catálogos necesarios, valida insumos y datos obligatorios, inserta cabecera/detalle dentro de una transacción y abre automáticamente el PDF generado por el trigger de numeración al concluir.【F:modules/conocimientos/pages/crear.php†L7-L200】
+- **Detalle y reportes**: `modules/conocimientos/pages/generar_pdf.php` produce el comprobante oficial con TCPDF validando permisos y adjuntando firmas opcionales; `modules/conocimientos/pages/exportar_excel.php` arma un CSV filtrable por múltiples criterios y restringe el acceso a roles administrativos o de RRHH.【F:modules/conocimientos/pages/generar_pdf.php†L1-L172】【F:modules/conocimientos/pages/exportar_excel.php†L1-L160】
 - **Administración de catálogos**: `usuarios.php` exige rol de administrador para crear o actualizar personal, incluyendo carga de firmas y sincronización con tablas de distritos, puestos y roles.【F:usuarios.php†L1-L160】
 - **Mantenimiento de equipos**: `modules/mantenimiento/index.php` ofrece filtros y accesos rápidos a recepción, diagnóstico, ejecución, entrega y consulta pública, mientras que las páginas anidadas (`modules/mantenimiento/pages/diagnostico.php`, `modules/mantenimiento/pages/ejecucion.php`, `modules/mantenimiento/pages/entrega.php`, `modules/mantenimiento/pages/seguimiento.php`, `modules/mantenimiento/pages/estado.php`) encapsulan cada fase con controles de rol y bitácoras.【F:modules/mantenimiento/index.php†L1-L210】【F:modules/mantenimiento/pages/diagnostico.php†L1-L200】【F:modules/mantenimiento/pages/ejecucion.php†L1-L200】【F:modules/mantenimiento/pages/entrega.php†L1-L210】【F:modules/mantenimiento/pages/seguimiento.php†L1-L200】【F:modules/mantenimiento/pages/estado.php†L1-L200】
 
@@ -33,7 +33,7 @@
 
 ## Flujo típico
 1. El usuario accede a `login.php`, se autentica y genera una sesión persistida en `sesiones_usuario` vía `Auth::login`.【F:login.php†L13-L195】【F:classes/Auth.php†L22-L220】
-2. Tras entrar al dashboard consulta métricas y accede a la creación o listado según su rol; los filtros se ejecutan con sentencias preparadas para evitar inyección.【F:dashboard.php†L25-L101】【F:conocimientos.php†L35-L141】
-3. Al registrar un nuevo conocimiento se valida entrada, se guarda cabecera/detalle y se entrega numeración automática respaldada por el trigger y el PDF emitido con TCPDF.【F:nuevo_conocimiento.php†L80-L200】【F:database.sql†L90-L123】【F:generar_pdf.php†L29-L172】
-4. Los administradores pueden exportar reportes a CSV o mantener usuarios, con logs y permisos controlados centralmente por la clase `Auth`.【F:exportar_excel.php†L24-L160】【F:usuarios.php†L18-L160】【F:classes/Auth.php†L311-L415】
+2. Tras entrar al dashboard consulta métricas y accede a la creación o listado según su rol; los filtros se ejecutan con sentencias preparadas para evitar inyección.【F:dashboard.php†L25-L101】【F:modules/conocimientos/index.php†L35-L141】
+3. Al registrar un nuevo conocimiento se valida entrada, se guarda cabecera/detalle y se entrega numeración automática respaldada por el trigger y el PDF emitido con TCPDF.【F:modules/conocimientos/pages/crear.php†L80-L200】【F:database.sql†L90-L123】【F:modules/conocimientos/pages/generar_pdf.php†L29-L172】
+4. Los administradores pueden exportar reportes a CSV o mantener usuarios, con logs y permisos controlados centralmente por la clase `Auth`.【F:modules/conocimientos/pages/exportar_excel.php†L24-L160】【F:usuarios.php†L18-L160】【F:classes/Auth.php†L311-L415】
 5. El módulo de mantenimiento cubre recepción (`modules/mantenimiento/pages/recepcion.php`), asignación y diagnóstico, ejecución, entrega y seguimiento; cada etapa persiste cambios mediante `modules/mantenimiento/services/MantenimientoRepository.php` y expone una consulta pública (`modules/mantenimiento/pages/estado.php`) para transparencia.【F:modules/mantenimiento/pages/recepcion.php†L1-L220】【F:modules/mantenimiento/services/MantenimientoRepository.php†L1-L360】【F:modules/mantenimiento/pages/estado.php†L1-L200】

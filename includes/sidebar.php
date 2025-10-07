@@ -11,16 +11,16 @@
       </a>
 
       <?php if (function_exists('has_role') ? (has_role('Técnico') || has_role('Administrador')) : true): ?>
-        <a class="nav-link" href="nuevo_conocimiento.php">
+        <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/crear.php">
           <i class="fas fa-plus-circle me-2"></i>Nuevo Conocimiento
         </a>
       <?php endif; ?>
 
-      <a class="nav-link" href="conocimientos.php">
+      <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/index.php">
         <i class="fas fa-list me-2"></i>Conocimientos
       </a>
 
-      <a class="nav-link" href="reportes.php">
+      <a class="nav-link" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/reportes.php">
         <i class="fas fa-chart-bar me-2"></i>Reportes
       </a>
 
