@@ -22,9 +22,11 @@
 - **Registro de entregas**: `nuevo_conocimiento.php` arma los catálogos necesarios, valida insumos y datos obligatorios, inserta cabecera/detalle dentro de una transacción y abre automáticamente el PDF generado por el trigger de numeración al concluir.【F:nuevo_conocimiento.php†L7-L200】
 - **Detalle y reportes**: `generar_pdf.php` produce el comprobante oficial con TCPDF validando permisos y adjuntando firmas opcionales; `exportar_excel.php` arma un CSV filtrable por múltiples criterios y restringe el acceso a roles administrativos o de RRHH.【F:generar_pdf.php†L1-L172】【F:exportar_excel.php†L1-L160】
 - **Administración de catálogos**: `usuarios.php` exige rol de administrador para crear o actualizar personal, incluyendo carga de firmas y sincronización con tablas de distritos, puestos y roles.【F:usuarios.php†L1-L160】
+- **Mantenimiento de equipos**: `mantenimientos.php` ofrece filtros y accesos rápidos a recepción, diagnóstico, ejecución, entrega y consulta pública, mientras que `diagnostico.php`, `mantenimiento.php`, `entrega.php`, `seguimiento.php` y `estado.php` encapsulan cada fase del flujo con controles de rol y registros en bitácora.【F:mantenimientos.php†L1-L220】【F:diagnostico.php†L1-L220】【F:mantenimiento.php†L1-L260】【F:entrega.php†L1-L230】【F:estado.php†L1-L220】
 
 ## Esquema de datos
 - El script `database.sql` define tablas para categorías de insumos, conocimientos, detalle, distritos, receptores, roles, sesiones, usuarios y logs. Destacan el trigger `generar_numero_conocimiento` que asegura numeración correlativa Año-Número y los índices para acelerar consultas por fecha, estado y participantes.【F:database.sql†L24-L200】【F:database.sql†L334-L390】
+- El bloque final del esquema incorpora `equipos`, `mantenimientos`, `diagnosticos`, `mantenimiento_repuestos`, `seguimientos`, `entregas` y `mantenimiento_estados_historial`, garantizando llaves foráneas hacia usuarios y trazabilidad completa del proceso de mantenimiento.【F:database.sql†L400-L489】
 
 ## Estilos y experiencia de usuario
 - La hoja `assets/css/style.css` consolida la paleta, sombras y componentes (tarjetas, formularios, sidebar, login) reforzando la identidad institucional sobre Bootstrap.【F:assets/css/style.css†L1-L139】
@@ -34,3 +36,4 @@
 2. Tras entrar al dashboard consulta métricas y accede a la creación o listado según su rol; los filtros se ejecutan con sentencias preparadas para evitar inyección.【F:dashboard.php†L25-L101】【F:conocimientos.php†L35-L141】
 3. Al registrar un nuevo conocimiento se valida entrada, se guarda cabecera/detalle y se entrega numeración automática respaldada por el trigger y el PDF emitido con TCPDF.【F:nuevo_conocimiento.php†L80-L200】【F:database.sql†L90-L123】【F:generar_pdf.php†L29-L172】
 4. Los administradores pueden exportar reportes a CSV o mantener usuarios, con logs y permisos controlados centralmente por la clase `Auth`.【F:exportar_excel.php†L24-L160】【F:usuarios.php†L18-L160】【F:classes/Auth.php†L311-L415】
+5. El módulo de mantenimiento cubre recepción (`recepcion_nueva.php`), asignación y diagnóstico, ejecución, entrega y seguimiento; cada etapa persiste cambios mediante `MantenimientoRepository` y expone una consulta pública (`estado.php`) para transparencia.【F:recepcion_nueva.php†L1-L220】【F:classes/MantenimientoRepository.php†L1-L360】【F:estado.php†L1-L220】

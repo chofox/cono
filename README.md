@@ -10,6 +10,7 @@ Sistema web para la gestión y registro de entregas de insumos en la Dirección 
 - **Registro de entregas** con selección dinámica de insumos
 - **Generación de PDFs** con formato oficial
 - **Sistema de reportes** con filtros avanzados y exportación a Excel
+- **Módulo integral de mantenimiento** para recepción, diagnóstico, ejecución, entrega y seguimiento de equipos institucionales
 - **Dashboard responsivo** con estadísticas en tiempo real
 
 ## 📋 Requisitos del Sistema
@@ -108,7 +109,15 @@ cono/
 ├── nuevo_conocimiento.php    # Registro de entregas
 ├── usuarios.php              # Gestión de usuarios
 ├── insumos.php              # Gestión de insumos
-├── reportes.php             # Sistema de reportes
+├── reportes.php             # Sistema de reportes de conocimientos
+├── reporte.php              # Reportes del módulo de mantenimiento
+├── mantenimientos.php       # Panel integral de mantenimientos
+├── recepcion_nueva.php      # Registro de recepción de equipos
+├── diagnostico.php          # Registro del diagnóstico técnico
+├── mantenimiento.php        # Ejecución y control del mantenimiento
+├── entrega.php              # Entrega de equipos y cierre
+├── seguimiento.php          # Seguimientos post-servicio
+├── estado.php               # Consulta pública del estado del mantenimiento
 ├── generar_pdf.php          # Generación de PDFs
 ├── exportar_excel.php       # Exportación a Excel
 └── README.md                # Este archivo
@@ -158,7 +167,16 @@ cono/
 - Estadísticas en tiempo real
 - Gráficos de entregas mensuales
 - Accesos rápidos por rol
-- Actividad reciente
+
+## 🛠️ Módulo de Mantenimiento de Equipos
+
+- **Recepción**: registro de ingreso, generación automática de folio y QR público, asignación opcional de técnico.
+- **Diagnóstico**: asignación de técnico responsable, captura de falla, causa, acción recomendada y aprobación del supervisor.
+- **Ejecución**: control de inicio/fin, horas empleadas, costos de mano de obra y repuestos, bitácora automática de estados.
+- **Entrega**: emisión de comprobante con observaciones, estado final (entregado/cerrado) y seguimiento del QR por el usuario.
+- **Seguimiento**: registro post-servicio por parte de supervisores, con actualización del estado y trazabilidad en la línea de tiempo.
+- **Consulta pública**: página `estado.php` que permite a cualquier usuario verificar el avance con folio o código QR.
+- **Reportes**: exportación a PDF/Excel por técnico, estado, fechas o tipo de mantenimiento desde `reporte.php`.
 
 ## 🔧 Configuración Avanzada
 

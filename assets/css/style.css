@@ -137,3 +137,28 @@ body {
     border: none;
     border-radius: 10px;
 }
+
+.timeline {
+    border-left: 2px solid #e9ecef;
+    padding-left: 1.25rem;
+    margin-left: 0.5rem;
+}
+
+.timeline li {
+    position: relative;
+    list-style: none;
+    padding-left: 0.75rem;
+}
+
+.timeline li::before {
+    content: '';
+    position: absolute;
+    left: -1.4rem;
+    top: 0.35rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e9ecef;
+}

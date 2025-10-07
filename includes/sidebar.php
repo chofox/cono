@@ -24,6 +24,24 @@
         <i class="fas fa-chart-bar me-2"></i>Reportes
       </a>
 
+      <?php if (function_exists('has_any_role') ? has_any_role(['Recepcionista', 'Supervisor', 'Técnico', 'Administrador']) : true): ?>
+        <hr class="my-3">
+        <h6 class="text-muted text-uppercase mb-3">Mantenimiento</h6>
+        <a class="nav-link" href="mantenimientos.php">
+          <i class="fas fa-tools me-2"></i>Panel de Mantenimientos
+        </a>
+        <?php if (function_exists('has_any_role') ? has_any_role(['Recepcionista', 'Administrador']) : true): ?>
+          <a class="nav-link" href="recepcion_nueva.php">
+            <i class="fas fa-inbox me-2"></i>Recepción de Equipo
+          </a>
+        <?php endif; ?>
+        <?php if (function_exists('has_any_role') ? has_any_role(['Supervisor', 'Administrador']) : true): ?>
+          <a class="nav-link" href="reporte.php">
+            <i class="fas fa-file-alt me-2"></i>Reportes Mantenimiento
+          </a>
+        <?php endif; ?>
+      <?php endif; ?>
+
       <?php if (function_exists('has_role') ? has_role('Administrador') : true): ?>
         <hr class="my-3">
         <h6 class="text-muted text-uppercase mb-3">Administración</h6>

@@ -54,15 +54,41 @@ function has_role($required_role) {
     if (!is_logged_in()) {
         return false;
     }
-    
+
     $user_role = $_SESSION['user_role'];
-    
+
     // El administrador tiene acceso a todo
     if ($user_role === 'Administrador') {
         return true;
     }
-    
+
     return $user_role === $required_role;
+}
+
+/**
+ * Verifica si el usuario tiene alguno de los roles especificados.
+ */
+function has_any_role(array $roles): bool {
+    if (!is_logged_in()) {
+        return false;
+    }
+
+    $user_role = $_SESSION['user_role'];
+    if ($user_role === 'Administrador') {
+        return true;
+    }
+
+    return in_array($user_role, $roles, true);
+}
+
+/**
+ * Requiere al menos uno de los roles indicados para acceder a un recurso.
+ */
+function require_any_role(array $roles): void {
+    if (!has_any_role($roles)) {
+        header('Location: dashboard.php?error=no_permission');
+        exit();
+    }
 }
 
 /**
@@ -375,6 +401,74 @@ function get_all_receptores() {
     $stmt = $conn->prepare($query);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Obtiene usuarios por rol del sistema principal.
+ */
+function get_users_by_role(string $role): array {
+    try {
+        $database = new Database();
+        $conn = $database->getConnection();
+
+        $query = "SELECT u.id, u.nombre_completo
+                  FROM usuarios u
+                  INNER JOIN roles r ON u.rol_id = r.id
+                  WHERE r.nombre = :rol AND u.activo = 1
+                  ORDER BY u.nombre_completo";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':rol', $role);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log('Error obteniendo usuarios por rol: ' . $e->getMessage());
+        return [];
+    }
+}
+
+function mantenimiento_estados(): array {
+    return [
+        'en_recepcion' => 'En recepción',
+        'en_diagnostico' => 'En diagnóstico',
+        'en_mantenimiento' => 'En mantenimiento',
+        'listo_para_entrega' => 'Listo para entrega',
+        'entregado' => 'Entregado',
+        'cerrado' => 'Cerrado',
+    ];
+}
+
+function mantenimiento_estado_label(string $estado): string {
+    $estados = mantenimiento_estados();
+    return $estados[$estado] ?? ucfirst(str_replace('_', ' ', $estado));
+}
+
+function mantenimiento_estado_badge_class(string $estado): string {
+    return match ($estado) {
+        'en_recepcion' => 'secondary',
+        'en_diagnostico' => 'info',
+        'en_mantenimiento' => 'warning',
+        'listo_para_entrega' => 'primary',
+        'entregado' => 'success',
+        'cerrado' => 'dark',
+        default => 'light',
+    };
+}
+
+function mantenimiento_tipo_options(): array {
+    return [
+        'preventivo' => 'Preventivo',
+        'correctivo' => 'Correctivo',
+    ];
+}
+
+function generar_url_estado_publico(string $token): string {
+    return APP_URL . '/estado.php?token=' . urlencode($token);
+}
+
+function generar_qr_url(string $token): string {
+    $url = generar_url_estado_publico($token);
+    return 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' . urlencode($url);
 }
 
 ?>
