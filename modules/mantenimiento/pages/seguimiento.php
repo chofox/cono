@@ -1,20 +1,13 @@
 <?php
-session_start();
-require_once dirname(__DIR__, 3) . '/config/database.php';
-require_once dirname(__DIR__, 3) . '/classes/Auth.php';
-require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
-require_once dirname(__DIR__, 3) . '/includes/functions.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 require_auth();
 require_any_role(['Supervisor', 'Administrador']);
 
-$auth = new Auth();
-$current_user = $auth->getCurrentUser();
-$repository = new MantenimientoRepository();
-
-$folio = $_GET['folio'] ?? '';
+$folio = sanitize_input($_GET['folio'] ?? '');
 if ($folio === '') {
-    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php?error=folio_requerido');
+    set_flash_message('Debe seleccionar un folio para continuar.', 'warning');
+    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php');
     exit();
 }
 
@@ -72,115 +65,135 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $mantenimiento = $repository->obtenerMantenimientoPorFolio($folio);
 $seguimientos = $repository->obtenerSeguimientos((int) $mantenimiento['id']);
-
+$estados = [
+    'en_mantenimiento' => 'En mantenimiento',
+    'listo_para_entrega' => 'Listo para entrega',
+    'entregado' => 'Entregado',
+    'cerrado' => 'Cerrado',
+];
 $csrf_token = generate_csrf_token();
-$page_title = 'Seguimiento';
-$estados = ['en_mantenimiento' => 'En mantenimiento', 'listo_para_entrega' => 'Listo para entrega', 'entregado' => 'Entregado', 'cerrado' => 'Cerrado'];
+
+$page_title = 'Seguimiento post-servicio';
+$page_subtitle = 'Folio ' . htmlspecialchars($mantenimiento['folio']);
+$breadcrumbs = [
+    ['label' => 'Inicio', 'href' => APP_URL . '/dashboard.php'],
+    ['label' => 'Mantenimiento', 'href' => APP_URL . '/modules/mantenimiento/index.php'],
+    ['label' => 'Seguimiento'],
+];
+$page_actions = [
+    [
+        'label' => 'Listado',
+        'href' => APP_URL . '/modules/mantenimiento/index.php',
+        'icon' => 'fas fa-arrow-left',
+        'class' => 'button is-light',
+    ],
+    [
+        'label' => 'Entrega',
+        'href' => APP_URL . '/modules/mantenimiento/pages/entrega.php?folio=' . urlencode($mantenimiento['folio']),
+        'icon' => 'fas fa-truck',
+        'class' => 'button is-light',
+    ],
+];
+
+include dirname(__DIR__, 3) . '/includes/page_start.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seguimiento - <?php echo APP_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
-</head>
-<body>
-<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 px-0">
-            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
-        </div>
-        <div class="col-md-9 col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h1 class="h3 mb-0">Seguimiento post-servicio</h1>
-                    <p class="text-muted mb-0">Folio <?php echo htmlspecialchars($mantenimiento['folio']); ?> — Estado: <span class="badge bg-<?php echo mantenimiento_estado_badge_class($mantenimiento['estado']); ?>"><?php echo mantenimiento_estado_label($mantenimiento['estado']); ?></span></p>
-                </div>
-                <div class="btn-group">
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Regresar
-                    </a>
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/entrega.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-truck me-2"></i>Entrega
-                    </a>
-                </div>
+
+<div class="box has-background-light mb-5">
+    <div class="level is-mobile">
+        <div class="level-left">
+            <div>
+                <p class="heading">Estado actual</p>
+                <span class="tag <?php echo mantenimiento_estado_badge_class($mantenimiento['estado']); ?>">
+                    <?php echo mantenimiento_estado_label($mantenimiento['estado']); ?>
+                </span>
             </div>
-
-            <?php if (!empty($errors)): ?>
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <?php foreach ($errors as $error): ?>
-                            <li><?php echo htmlspecialchars($error); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <div class="row g-3">
-                <div class="col-lg-6">
-                    <form method="post" class="card">
-                        <div class="card-header bg-white">
-                            <h2 class="h5 mb-0">Registrar seguimiento</h2>
-                        </div>
-                        <div class="card-body">
-                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                            <div class="mb-3">
-                                <label class="form-label">Fecha y hora *</label>
-                                <input type="datetime-local" name="fecha_seguimiento" class="form-control" value="<?php echo htmlspecialchars($_POST['fecha_seguimiento'] ?? date('Y-m-d\\TH:i')); ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Descripción *</label>
-                                <textarea name="descripcion" class="form-control" rows="4" required placeholder="Resultados de la verificación, satisfacción del usuario, incidencias posteriores."><?php echo htmlspecialchars($_POST['descripcion'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Actualizar estado</label>
-                                <select name="estado_final" class="form-select">
-                                    <?php foreach ($estados as $clave => $label): ?>
-                                        <option value="<?php echo $clave; ?>" <?php echo (($mantenimiento['estado'] === $clave) ? 'selected' : ''); ?>><?php echo $label; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-footer text-end bg-white">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Guardar seguimiento
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header bg-white">
-                            <h2 class="h6 mb-0">Historial de seguimientos</h2>
-                        </div>
-                        <div class="card-body">
-                            <?php if (empty($seguimientos)): ?>
-                                <p class="text-muted mb-0">Aún no se han registrado seguimientos para este mantenimiento.</p>
-                            <?php else: ?>
-                                <ul class="list-group list-group-flush">
-                                    <?php foreach ($seguimientos as $seguimiento): ?>
-                                        <li class="list-group-item">
-                                            <div class="d-flex justify-content-between">
-                                                <span class="fw-semibold"><?php echo htmlspecialchars($seguimiento['supervisor_nombre'] ?? 'Supervisor'); ?></span>
-                                                <span class="small text-muted"><?php echo format_datetime($seguimiento['fecha_seguimiento']); ?></span>
-                                            </div>
-                                            <div class="small text-muted mb-1">Estado: <?php echo mantenimiento_estado_label($seguimiento['estado']); ?></div>
-                                            <div><?php echo nl2br(htmlspecialchars($seguimiento['descripcion'])); ?></div>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <div class="level-right">
+            <div class="has-text-right">
+                <p class="heading">Último seguimiento</p>
+                <p class="title is-6"><?php echo !empty($seguimientos) ? format_datetime($seguimientos[0]['fecha_seguimiento']) : 'Sin registros'; ?></p>
             </div>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+<?php if (!empty($errors)): ?>
+    <div class="notification is-danger is-light">
+        <strong>No se pudo registrar el seguimiento:</strong>
+        <ul class="mt-2">
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo htmlspecialchars($error); ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+<div class="columns is-variable is-6">
+    <div class="column is-12-tablet is-6-desktop">
+        <form method="post" class="card">
+            <header class="card-header">
+                <p class="card-header-title">Registrar seguimiento</p>
+            </header>
+            <div class="card-content">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                <div class="field">
+                    <label class="label">Fecha y hora *</label>
+                    <div class="control">
+                        <input type="datetime-local" name="fecha_seguimiento" class="input" value="<?php echo htmlspecialchars($_POST['fecha_seguimiento'] ?? date('Y-m-d\TH:i')); ?>" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Descripción *</label>
+                    <div class="control">
+                        <textarea name="descripcion" class="textarea" rows="4" required placeholder="Resultados de la verificación, satisfacción del usuario, incidencias posteriores."><?php echo htmlspecialchars($_POST['descripcion'] ?? ''); ?></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Actualizar estado</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select name="estado_final">
+                                <?php foreach ($estados as $clave => $label): ?>
+                                    <option value="<?php echo $clave; ?>" <?php echo ($mantenimiento['estado'] === $clave) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <div class="card-footer-item is-justify-content-flex-end">
+                    <button type="submit" class="button is-primary">
+                        <span class="icon"><i class="fas fa-save"></i></span>
+                        <span>Guardar seguimiento</span>
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div>
+    <div class="column is-12-tablet is-6-desktop">
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">Historial de seguimientos</p>
+            </header>
+            <div class="card-content">
+                <?php if (empty($seguimientos)): ?>
+                    <p class="has-text-grey">Aún no se han registrado seguimientos para este mantenimiento.</p>
+                <?php else: ?>
+                    <ul class="timeline">
+                        <?php foreach ($seguimientos as $seguimiento): ?>
+                            <li class="timeline-item">
+                                <p class="is-size-7 has-text-grey"><?php echo format_datetime($seguimiento['fecha_seguimiento']); ?></p>
+                                <p class="has-text-weight-semibold"><?php echo htmlspecialchars($seguimiento['supervisor_nombre'] ?? 'Supervisor'); ?></p>
+                                <p class="is-size-7 has-text-grey">Estado: <?php echo mantenimiento_estado_label($seguimiento['estado']); ?></p>
+                                <p><?php echo nl2br(htmlspecialchars($seguimiento['descripcion'])); ?></p>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include dirname(__DIR__, 3) . '/includes/page_end.php'; ?>

@@ -87,8 +87,17 @@ if (!function_exists('render_breadcrumbs')) {
                                         $href = $action['href'] ?? '#';
                                         $icon = $action['icon'] ?? '';
                                         $class = $action['class'] ?? 'button is-primary';
+                                        $target = $action['target'] ?? '';
+                                        $rel = $action['rel'] ?? '';
+                                        $attributes = '';
+                                        if ($target !== '') {
+                                            $attributes .= ' target="' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '"';
+                                        }
+                                        if ($rel !== '') {
+                                            $attributes .= ' rel="' . htmlspecialchars($rel, ENT_QUOTES, 'UTF-8') . '"';
+                                        }
                                     ?>
-                                    <a class="<?php echo htmlspecialchars($class, ENT_QUOTES, 'UTF-8'); ?>" href="<?php echo htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <a class="<?php echo htmlspecialchars($class, ENT_QUOTES, 'UTF-8'); ?>" href="<?php echo htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $attributes; ?>>
                                         <?php if ($icon !== ''): ?>
                                             <span class="icon"><i class="<?php echo htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?>"></i></span>
                                         <?php endif; ?>

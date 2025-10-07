@@ -1,20 +1,13 @@
 <?php
-session_start();
-require_once dirname(__DIR__, 3) . '/config/database.php';
-require_once dirname(__DIR__, 3) . '/classes/Auth.php';
-require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
-require_once dirname(__DIR__, 3) . '/includes/functions.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 require_auth();
 require_any_role(['Técnico', 'Supervisor', 'Administrador']);
 
-$auth = new Auth();
-$current_user = $auth->getCurrentUser();
-$repository = new MantenimientoRepository();
-
-$folio = $_GET['folio'] ?? '';
+$folio = sanitize_input($_GET['folio'] ?? '');
 if ($folio === '') {
-    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php?error=folio_requerido');
+    set_flash_message('Debe seleccionar un folio para continuar.', 'warning');
+    header('Location: ' . APP_URL . '/modules/mantenimiento/index.php');
     exit();
 }
 
@@ -28,7 +21,6 @@ if (!$mantenimiento) {
 $diagnostico = $repository->obtenerDiagnostico((int) $mantenimiento['id']);
 $repuestos = $repository->obtenerRepuestos((int) $mantenimiento['id']);
 $historial = $repository->obtenerHistorialEstados((int) $mantenimiento['id']);
-
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -77,8 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $costoTotal = $costoManoObra + $totalRepuestos;
+    $estadosDisponibles = mantenimiento_estados();
 
-    if (!array_key_exists($estadoDestino, mantenimiento_estados())) {
+    if (!array_key_exists($estadoDestino, $estadosDisponibles)) {
         $errors[] = 'El estado seleccionado no es válido.';
     }
 
@@ -108,176 +101,231 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $mantenimiento = $repository->obtenerMantenimientoPorFolio($folio);
 $repuestos = $repository->obtenerRepuestos((int) $mantenimiento['id']);
 $historial = $repository->obtenerHistorialEstados((int) $mantenimiento['id']);
-
-$csrf_token = generate_csrf_token();
-$page_title = 'Ejecución de Mantenimiento';
 $estados = mantenimiento_estados();
+$csrf_token = generate_csrf_token();
+
+$page_title = 'Ejecución del mantenimiento';
+$page_subtitle = 'Folio ' . htmlspecialchars($mantenimiento['folio']);
+$breadcrumbs = [
+    ['label' => 'Inicio', 'href' => APP_URL . '/dashboard.php'],
+    ['label' => 'Mantenimiento', 'href' => APP_URL . '/modules/mantenimiento/index.php'],
+    ['label' => 'Ejecución'],
+];
+$page_actions = [
+    [
+        'label' => 'Listado',
+        'href' => APP_URL . '/modules/mantenimiento/index.php',
+        'icon' => 'fas fa-arrow-left',
+        'class' => 'button is-light',
+    ],
+    [
+        'label' => 'Diagnóstico',
+        'href' => APP_URL . '/modules/mantenimiento/pages/diagnostico.php?folio=' . urlencode($mantenimiento['folio']),
+        'icon' => 'fas fa-stethoscope',
+        'class' => 'button is-light',
+    ],
+    [
+        'label' => 'Entrega',
+        'href' => APP_URL . '/modules/mantenimiento/pages/entrega.php?folio=' . urlencode($mantenimiento['folio']),
+        'icon' => 'fas fa-truck',
+        'class' => 'button is-light',
+    ],
+];
+
+include dirname(__DIR__, 3) . '/includes/page_start.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mantenimiento - <?php echo APP_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
-</head>
-<body>
-<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 px-0">
-            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
-        </div>
-        <div class="col-md-9 col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h1 class="h3 mb-0">Ejecución del mantenimiento</h1>
-                    <p class="text-muted mb-0">Folio <?php echo htmlspecialchars($mantenimiento['folio']); ?> — Estado actual: <span class="badge bg-<?php echo mantenimiento_estado_badge_class($mantenimiento['estado']); ?>"><?php echo mantenimiento_estado_label($mantenimiento['estado']); ?></span></p>
-                </div>
-                <div class="btn-group">
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/index.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Regresar
-                    </a>
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/diagnostico.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-stethoscope me-2"></i>Diagnóstico
-                    </a>
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/entrega.php?folio=<?php echo urlencode($mantenimiento['folio']); ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-truck me-2"></i>Entrega
-                    </a>
-                </div>
+
+<div class="box has-background-light mb-5">
+    <div class="level is-mobile">
+        <div class="level-left">
+            <div>
+                <p class="heading">Estado actual</p>
+                <span class="tag <?php echo mantenimiento_estado_badge_class($mantenimiento['estado']); ?>">
+                    <?php echo mantenimiento_estado_label($mantenimiento['estado']); ?>
+                </span>
             </div>
-
-            <?php if (!empty($errors)): ?>
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <?php foreach ($errors as $error): ?>
-                            <li><?php echo htmlspecialchars($error); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <div class="row g-3">
-                <div class="col-lg-8">
-                    <form method="post" class="card">
-                        <div class="card-header bg-white">
-                            <h2 class="h5 mb-0">Datos de ejecución</h2>
-                        </div>
-                        <div class="card-body">
-                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Inicio *</label>
-                                    <input type="datetime-local" name="fecha_inicio" class="form-control" value="<?php echo htmlspecialchars($mantenimiento['fecha_inicio'] ? date('Y-m-d\\TH:i', strtotime($mantenimiento['fecha_inicio'])) : date('Y-m-d\\TH:i')); ?>" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Fin</label>
-                                    <input type="datetime-local" name="fecha_fin" class="form-control" value="<?php echo htmlspecialchars($mantenimiento['fecha_fin'] ? date('Y-m-d\\TH:i', strtotime($mantenimiento['fecha_fin'])) : ''); ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Duración (hrs)</label>
-                                    <input type="number" step="0.1" name="duracion" class="form-control" value="<?php echo htmlspecialchars($mantenimiento['duracion_horas'] ?? ''); ?>" placeholder="Ej. 3.5">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Costo mano de obra</label>
-                                    <input type="number" step="0.01" name="costo_mano_obra" class="form-control" value="<?php echo htmlspecialchars($mantenimiento['costo_mano_obra'] ?? '0'); ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Estado del proceso</label>
-                                    <select name="estado" class="form-select">
-                                        <?php foreach ($estados as $clave => $label): ?>
-                                            <?php if (in_array($clave, ['en_recepcion', 'entregado', 'cerrado']) && $clave !== $mantenimiento['estado']) continue; ?>
-                                            <option value="<?php echo $clave; ?>" <?php echo ($mantenimiento['estado'] === $clave) ? 'selected' : ''; ?>><?php echo $label; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Observaciones</label>
-                                    <textarea name="observaciones" class="form-control" rows="4" placeholder="Describa el trabajo realizado, pruebas efectuadas y hallazgos adicionales."><?php echo htmlspecialchars($mantenimiento['observaciones_finales'] ?? ''); ?></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-end bg-white">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Guardar cambios
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card mb-3">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <h2 class="h6 mb-0">Repuestos y materiales</h2>
-                            <span class="badge bg-primary">Costo: Q<?php echo number_format((float)($mantenimiento['costo_repuestos'] ?? 0), 2); ?></span>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted small">Agregue hasta cinco repuestos o materiales utilizados durante el mantenimiento.</p>
-                            <?php for ($i = 0; $i < 5; $i++): ?>
-                                <?php $rep = $repuestos[$i] ?? ['nombre_repuesto' => '', 'cantidad' => '', 'costo_unitario' => '']; ?>
-                                <div class="border rounded p-2 mb-2">
-                                    <div class="mb-2">
-                                        <label class="form-label small mb-1">Descripción</label>
-                                        <input type="text" name="repuestos_nombre[]" class="form-control form-control-sm" value="<?php echo htmlspecialchars($rep['nombre_repuesto'] ?? ''); ?>">
-                                    </div>
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <label class="form-label small mb-1">Cantidad</label>
-                                            <input type="number" name="repuestos_cantidad[]" class="form-control form-control-sm" value="<?php echo htmlspecialchars($rep['cantidad'] ?? ''); ?>" min="0">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small mb-1">Costo unitario</label>
-                                            <input type="number" step="0.01" name="repuestos_costo[]" class="form-control form-control-sm" value="<?php echo htmlspecialchars($rep['costo_unitario'] ?? ''); ?>">
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endfor; ?>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header bg-white">
-                            <h2 class="h6 mb-0">Diagnóstico</h2>
-                        </div>
-                        <div class="card-body">
-                            <?php if (!$diagnostico): ?>
-                                <p class="text-muted mb-0">Aún no se ha registrado un diagnóstico para este mantenimiento.</p>
-                            <?php else: ?>
-                                <p class="mb-1"><strong>Falla:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['descripcion_falla'])); ?></p>
-                                <p class="mb-1"><strong>Causa:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['causa'] ?? '')); ?></p>
-                                <p class="mb-1"><strong>Acción recomendada:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['accion_recomendada'] ?? '')); ?></p>
-                                <p class="mb-0"><strong>Fecha:</strong> <?php echo format_date($diagnostico['fecha_diagnostico']); ?></p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <div class="card mt-3">
-                        <div class="card-header bg-white">
-                            <h2 class="h6 mb-0">Historial</h2>
-                        </div>
-                        <div class="card-body">
-                            <?php if (empty($historial)): ?>
-                                <p class="text-muted mb-0">Aún no hay registros.</p>
-                            <?php else: ?>
-                                <ul class="timeline list-unstyled mb-0">
-                                    <?php foreach ($historial as $evento): ?>
-                                        <li class="mb-3">
-                                            <div class="small text-muted"><?php echo format_datetime($evento['fecha_registro']); ?></div>
-                                            <strong><?php echo mantenimiento_estado_label($evento['estado']); ?></strong>
-                                            <div class="small text-muted"><?php echo htmlspecialchars($evento['nombre_completo'] ?? 'Sistema'); ?></div>
-                                            <?php if (!empty($evento['comentario'])): ?>
-                                                <div><?php echo nl2br(htmlspecialchars($evento['comentario'])); ?></div>
-                                            <?php endif; ?>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <div class="level-right">
+            <div class="has-text-right">
+                <p class="heading">Costos acumulados</p>
+                <p class="title is-6">Q<?php echo number_format((float)($mantenimiento['costo_total'] ?? 0), 2); ?></p>
             </div>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+<?php if (!empty($errors)): ?>
+    <div class="notification is-danger is-light">
+        <strong>No se pudo guardar la información:</strong>
+        <ul class="mt-2">
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo htmlspecialchars($error); ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+    <div class="columns is-variable is-6">
+        <div class="column is-12-tablet is-8-desktop">
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title">Datos de ejecución</p>
+                </header>
+                <div class="card-content">
+                    <div class="columns is-multiline">
+                        <div class="column is-12-tablet is-6-desktop">
+                            <div class="field">
+                                <label class="label">Inicio *</label>
+                                <div class="control">
+                                    <input type="datetime-local" name="fecha_inicio" class="input" value="<?php echo htmlspecialchars($mantenimiento['fecha_inicio'] ? date('Y-m-d\TH:i', strtotime($mantenimiento['fecha_inicio'])) : date('Y-m-d\TH:i')); ?>" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-12-tablet is-6-desktop">
+                            <div class="field">
+                                <label class="label">Fin</label>
+                                <div class="control">
+                                    <input type="datetime-local" name="fecha_fin" class="input" value="<?php echo htmlspecialchars($mantenimiento['fecha_fin'] ? date('Y-m-d\TH:i', strtotime($mantenimiento['fecha_fin'])) : ''); ?>">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-12-tablet is-4-desktop">
+                            <div class="field">
+                                <label class="label">Duración (hrs)</label>
+                                <div class="control">
+                                    <input type="number" step="0.1" name="duracion" class="input" value="<?php echo htmlspecialchars($mantenimiento['duracion_horas'] ?? ''); ?>" placeholder="Ej. 3.5">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-12-tablet is-4-desktop">
+                            <div class="field">
+                                <label class="label">Costo mano de obra</label>
+                                <div class="control has-icons-left">
+                                    <input type="number" step="0.01" name="costo_mano_obra" class="input" value="<?php echo htmlspecialchars($mantenimiento['costo_mano_obra'] ?? '0'); ?>">
+                                    <span class="icon is-small is-left"><i class="fas fa-quetzal-sign"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-12-tablet is-4-desktop">
+                            <div class="field">
+                                <label class="label">Estado del proceso</label>
+                                <div class="control">
+                                    <div class="select is-fullwidth">
+                                        <select name="estado">
+                                            <?php foreach ($estados as $clave => $label): ?>
+                                                <?php if (in_array($clave, ['en_recepcion', 'entregado', 'cerrado']) && $clave !== $mantenimiento['estado']) continue; ?>
+                                                <option value="<?php echo $clave; ?>" <?php echo ($mantenimiento['estado'] === $clave) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column is-12">
+                            <div class="field">
+                                <label class="label">Observaciones</label>
+                                <div class="control">
+                                    <textarea name="observaciones" class="textarea" rows="4" placeholder="Describa el trabajo realizado, pruebas efectuadas y hallazgos adicionales."><?php echo htmlspecialchars($mantenimiento['observaciones_finales'] ?? ''); ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column is-12-tablet is-4-desktop">
+            <div class="card mb-4">
+                <header class="card-header">
+                    <p class="card-header-title">Repuestos y materiales</p>
+                    <span class="card-header-icon has-text-primary">
+                        <span class="icon"><i class="fas fa-coins"></i></span>
+                        <span class="is-size-7 ms-2">Q<?php echo number_format((float)($mantenimiento['costo_repuestos'] ?? 0), 2); ?></span>
+                    </span>
+                </header>
+                <div class="card-content">
+                    <p class="is-size-7 has-text-grey">Agregue hasta cinco repuestos o materiales utilizados durante el mantenimiento.</p>
+                    <?php for ($i = 0; $i < 5; $i++): ?>
+                        <?php $rep = $repuestos[$i] ?? ['nombre_repuesto' => '', 'cantidad' => '', 'costo_unitario' => '']; ?>
+                        <div class="box is-shadowless has-background-white-bis mb-3">
+                            <div class="field">
+                                <label class="label is-size-7">Descripción</label>
+                                <div class="control">
+                                    <input type="text" name="repuestos_nombre[]" class="input is-small" value="<?php echo htmlspecialchars($rep['nombre_repuesto'] ?? ''); ?>">
+                                </div>
+                            </div>
+                            <div class="columns is-gapless">
+                                <div class="column pr-2">
+                                    <div class="field">
+                                        <label class="label is-size-7">Cantidad</label>
+                                        <div class="control">
+                                            <input type="number" name="repuestos_cantidad[]" class="input is-small" value="<?php echo htmlspecialchars($rep['cantidad'] ?? ''); ?>" min="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column pl-2">
+                                    <div class="field">
+                                        <label class="label is-size-7">Costo unitario</label>
+                                        <div class="control has-icons-left">
+                                            <input type="number" step="0.01" name="repuestos_costo[]" class="input is-small" value="<?php echo htmlspecialchars($rep['costo_unitario'] ?? ''); ?>">
+                                            <span class="icon is-left is-small"><i class="fas fa-quetzal-sign"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endfor; ?>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <header class="card-header">
+                    <p class="card-header-title">Diagnóstico</p>
+                </header>
+                <div class="card-content">
+                    <?php if (!$diagnostico): ?>
+                        <p class="has-text-grey">Aún no se ha registrado un diagnóstico para este mantenimiento.</p>
+                    <?php else: ?>
+                        <p class="mb-2"><strong>Falla:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['descripcion_falla'])); ?></p>
+                        <p class="mb-2"><strong>Causa:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['causa'] ?? '')); ?></p>
+                        <p class="mb-2"><strong>Acción recomendada:</strong><br><?php echo nl2br(htmlspecialchars($diagnostico['accion_recomendada'] ?? '')); ?></p>
+                        <p class="is-size-7 has-text-grey">Registrado el <?php echo format_date($diagnostico['fecha_diagnostico']); ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title">Historial</p>
+                </header>
+                <div class="card-content">
+                    <?php if (empty($historial)): ?>
+                        <p class="has-text-grey">Aún no hay registros.</p>
+                    <?php else: ?>
+                        <ul class="timeline">
+                            <?php foreach ($historial as $evento): ?>
+                                <li class="timeline-item">
+                                    <p class="is-size-7 has-text-grey"><?php echo format_datetime($evento['fecha_registro']); ?></p>
+                                    <p class="has-text-weight-semibold"><?php echo mantenimiento_estado_label($evento['estado']); ?></p>
+                                    <p class="is-size-7 has-text-grey"><?php echo htmlspecialchars($evento['nombre_completo'] ?? 'Sistema'); ?></p>
+                                    <?php if (!empty($evento['comentario'])): ?>
+                                        <p><?php echo nl2br(htmlspecialchars($evento['comentario'])); ?></p>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="field is-grouped is-justify-content-flex-end mt-5">
+        <div class="control">
+            <button type="submit" class="button is-primary">
+                <span class="icon"><i class="fas fa-save"></i></span>
+                <span>Guardar cambios</span>
+            </button>
+        </div>
+    </div>
+</form>
+
+<?php include dirname(__DIR__, 3) . '/includes/page_end.php'; ?>

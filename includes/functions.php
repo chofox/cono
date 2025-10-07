@@ -435,13 +435,13 @@ function mantenimiento_estado_label(string $estado): string {
 
 function mantenimiento_estado_badge_class(string $estado): string {
     return match ($estado) {
-        'en_recepcion' => 'secondary',
-        'en_diagnostico' => 'info',
-        'en_mantenimiento' => 'warning',
-        'listo_para_entrega' => 'primary',
-        'entregado' => 'success',
-        'cerrado' => 'dark',
-        default => 'light',
+        'en_recepcion' => 'is-link is-light',
+        'en_diagnostico' => 'is-info',
+        'en_mantenimiento' => 'is-warning',
+        'listo_para_entrega' => 'is-primary',
+        'entregado' => 'is-success',
+        'cerrado' => 'is-dark',
+        default => 'is-light',
     };
 }
 

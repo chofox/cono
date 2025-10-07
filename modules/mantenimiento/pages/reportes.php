@@ -1,16 +1,8 @@
 <?php
-session_start();
-require_once dirname(__DIR__, 3) . '/config/database.php';
-require_once dirname(__DIR__, 3) . '/classes/Auth.php';
-require_once dirname(__DIR__) . '/services/MantenimientoRepository.php';
-require_once dirname(__DIR__, 3) . '/includes/functions.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 require_auth();
 require_any_role(['Supervisor', 'Administrador']);
-
-$auth = new Auth();
-$current_user = $auth->getCurrentUser();
-$repository = new MantenimientoRepository();
 
 $filtros = [
     'estado' => $_GET['estado'] ?? '',
@@ -100,140 +92,179 @@ if ($export === 'pdf') {
     exit();
 }
 
-$page_title = 'Reportes de Mantenimiento';
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes - <?php echo APP_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
-</head>
-<body>
-<?php include_once dirname(__DIR__, 3) . '/includes/navbar.php'; ?>
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 px-0">
-            <?php include dirname(__DIR__, 3) . '/includes/sidebar.php'; ?>
-        </div>
-        <div class="col-md-9 col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h1 class="h3 mb-0">Reportes de mantenimiento</h1>
-                    <p class="text-muted mb-0">Genere reportes filtrables y exportables en PDF o Excel.</p>
-                </div>
-                <div class="btn-group">
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'pdf'])); ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-file-pdf me-2"></i>Exportar PDF
-                    </a>
-                    <a href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php?<?php echo http_build_query(array_merge($filtros, ['export' => 'excel'])); ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-file-excel me-2"></i>Exportar Excel
-                    </a>
-                </div>
-            </div>
+$exportQuery = fn(string $type): string => http_build_query(array_merge($filtros, ['export' => $type]));
 
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h2 class="h5 mb-0">Filtros</h2>
+$page_title = 'Reportes de mantenimiento';
+$page_subtitle = 'Genere filtros dinámicos y exporte los resultados en PDF o Excel';
+$breadcrumbs = [
+    ['label' => 'Inicio', 'href' => APP_URL . '/dashboard.php'],
+    ['label' => 'Mantenimiento', 'href' => APP_URL . '/modules/mantenimiento/index.php'],
+    ['label' => 'Reportes'],
+];
+$page_actions = [
+    [
+        'label' => 'Exportar PDF',
+        'href' => APP_URL . '/modules/mantenimiento/pages/reportes.php?' . $exportQuery('pdf'),
+        'icon' => 'fas fa-file-pdf',
+        'class' => 'button is-light',
+        'target' => '_blank',
+        'rel' => 'noopener',
+    ],
+    [
+        'label' => 'Exportar Excel',
+        'href' => APP_URL . '/modules/mantenimiento/pages/reportes.php?' . $exportQuery('excel'),
+        'icon' => 'fas fa-file-excel',
+        'class' => 'button is-light',
+    ],
+];
+
+include dirname(__DIR__, 3) . '/includes/page_start.php';
+?>
+
+<div class="card mb-5">
+    <header class="card-header">
+        <p class="card-header-title">Filtros</p>
+        <a class="card-header-icon" href="<?php echo APP_URL; ?>/modules/mantenimiento/pages/reportes.php" title="Limpiar filtros">
+            <span class="icon"><i class="fas fa-rotate-left"></i></span>
+        </a>
+    </header>
+    <div class="card-content">
+        <form method="get">
+            <div class="columns is-multiline">
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Estado</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="estado">
+                                    <option value="">Todos</option>
+                                    <?php foreach ($estados as $key => $label): ?>
+                                        <option value="<?php echo $key; ?>" <?php echo ($filtros['estado'] === $key) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form class="row g-3" method="get">
-                        <div class="col-md-3">
-                            <label class="form-label">Estado</label>
-                            <select name="estado" class="form-select">
-                                <option value="">Todos</option>
-                                <?php foreach ($estados as $key => $label): ?>
-                                    <option value="<?php echo $key; ?>" <?php echo ($filtros['estado'] === $key) ? 'selected' : ''; ?>><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Tipo</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="tipo_mantenimiento">
+                                    <option value="">Todos</option>
+                                    <?php foreach ($tipos as $key => $label): ?>
+                                        <option value="<?php echo $key; ?>" <?php echo ($filtros['tipo_mantenimiento'] === $key) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Tipo</label>
-                            <select name="tipo_mantenimiento" class="form-select">
-                                <option value="">Todos</option>
-                                <?php foreach ($tipos as $key => $label): ?>
-                                    <option value="<?php echo $key; ?>" <?php echo ($filtros['tipo_mantenimiento'] === $key) ? 'selected' : ''; ?>><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                    </div>
+                </div>
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Técnico</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="tecnico_id">
+                                    <option value="">Todos</option>
+                                    <?php foreach ($tecnicos as $tecnico): ?>
+                                        <option value="<?php echo $tecnico['id']; ?>" <?php echo ($filtros['tecnico_id'] == $tecnico['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($tecnico['nombre_completo']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Técnico</label>
-                            <select name="tecnico_id" class="form-select">
-                                <option value="">Todos</option>
-                                <?php foreach ($tecnicos as $tecnico): ?>
-                                    <option value="<?php echo $tecnico['id']; ?>" <?php echo ($filtros['tecnico_id'] == $tecnico['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($tecnico['nombre_completo']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                    </div>
+                </div>
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Folio</label>
+                        <div class="control">
+                            <input type="text" name="folio" class="input" value="<?php echo htmlspecialchars($filtros['folio']); ?>">
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Folio</label>
-                            <input type="text" name="folio" class="form-control" value="<?php echo htmlspecialchars($filtros['folio']); ?>">
+                    </div>
+                </div>
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Desde</label>
+                        <div class="control">
+                            <input type="date" name="fecha_inicio" class="input" value="<?php echo htmlspecialchars($filtros['fecha_inicio']); ?>">
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Desde</label>
-                            <input type="date" name="fecha_inicio" class="form-control" value="<?php echo htmlspecialchars($filtros['fecha_inicio']); ?>">
+                    </div>
+                </div>
+                <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+                    <div class="field">
+                        <label class="label">Hasta</label>
+                        <div class="control">
+                            <input type="date" name="fecha_fin" class="input" value="<?php echo htmlspecialchars($filtros['fecha_fin']); ?>">
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Hasta</label>
-                            <input type="date" name="fecha_fin" class="form-control" value="<?php echo htmlspecialchars($filtros['fecha_fin']); ?>">
-                        </div>
-                        <div class="col-md-12 text-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter me-2"></i>Aplicar filtros
+                    </div>
+                </div>
+                <div class="column is-12">
+                    <div class="field is-grouped is-justify-content-flex-end">
+                        <div class="control">
+                            <button type="submit" class="button is-primary">
+                                <span class="icon"><i class="fas fa-filter"></i></span>
+                                <span>Aplicar filtros</span>
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">Resultados</h2>
-                    <span class="badge bg-primary">Total: <?php echo $totalRegistros; ?> | Q<?php echo number_format($totalCosto, 2); ?></span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Folio</th>
-                                    <th>Equipo</th>
-                                    <th>Tipo</th>
-                                    <th>Estado</th>
-                                    <th>Técnico</th>
-                                    <th>Recepción</th>
-                                    <th class="text-end">Costo total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($mantenimientos)): ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted">No se encontraron mantenimientos con los filtros seleccionados.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($mantenimientos as $registro): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($registro['folio']); ?></td>
-                                            <td><?php echo htmlspecialchars($registro['equipo_descripcion']); ?></td>
-                                            <td><?php echo $tipos[$registro['tipo_mantenimiento']] ?? $registro['tipo_mantenimiento']; ?></td>
-                                            <td><span class="badge bg-<?php echo mantenimiento_estado_badge_class($registro['estado']); ?>"><?php echo mantenimiento_estado_label($registro['estado']); ?></span></td>
-                                            <td><?php echo htmlspecialchars($registro['tecnico_nombre'] ?? 'Sin asignar'); ?></td>
-                                            <td><?php echo format_date($registro['fecha_recepcion']); ?></td>
-                                            <td class="text-end">Q<?php echo number_format((float) $registro['costo_total'], 2); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+<div class="card">
+    <header class="card-header">
+        <div class="card-header-title is-justify-content-space-between is-align-items-center">
+            <p class="title is-5 mb-0">Resultados</p>
+            <span class="tag is-info is-light">Total: <?php echo $totalRegistros; ?> — Q<?php echo number_format($totalCosto, 2); ?></span>
+        </div>
+    </header>
+    <div class="card-content p-0">
+        <?php if (empty($mantenimientos)): ?>
+            <div class="notification is-light has-text-centered m-4">
+                <span class="icon-text">
+                    <span class="icon"><i class="fas fa-info-circle"></i></span>
+                    <span>No se encontraron registros con los filtros seleccionados.</span>
+                </span>
+            </div>
+        <?php else: ?>
+            <div class="table-container">
+                <table class="table is-fullwidth is-striped is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Equipo</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Técnico</th>
+                            <th>Recepción</th>
+                            <th class="has-text-right">Costo total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($mantenimientos as $registro): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($registro['folio']); ?></td>
+                                <td><?php echo htmlspecialchars($registro['equipo_descripcion']); ?></td>
+                                <td><?php echo $tipos[$registro['tipo_mantenimiento']] ?? $registro['tipo_mantenimiento']; ?></td>
+                                <td>
+                                    <span class="tag <?php echo mantenimiento_estado_badge_class($registro['estado']); ?>">
+                                        <?php echo mantenimiento_estado_label($registro['estado']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($registro['tecnico_nombre'] ?? 'Sin asignar'); ?></td>
+                                <td><?php echo format_date($registro['fecha_recepcion']); ?></td>
+                                <td class="has-text-right">Q<?php echo number_format((float) $registro['costo_total'], 2); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php include dirname(__DIR__, 3) . '/includes/page_end.php'; ?>
