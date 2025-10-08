@@ -5,14 +5,14 @@
  */
 
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación y permisos
 require_auth();
 if (!has_role('Técnico') && !has_role('Administrador')) {
-    header('Location: dashboard.php?error=no_permission');
+    header('Location: ' . APP_URL . '/dashboard.php?error=no_permission');
     exit();
 }
 
@@ -23,7 +23,7 @@ $insumos_conocimiento = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_cambios_conocimiento'])) {
     if (!verify_csrf_token($_POST['csrf_token'])) {
         $_SESSION['error_message'] = "Error de seguridad. Intento de CSRF detectado.";
-        header('Location: conocimientos.php');
+        header('Location: ' . APP_URL . '/modules/conocimientos/index.php');
         exit();
     }
 
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_cambios_conoc
         // Validaciones básicas
     if (empty($fecha_entrega) || empty($lugar_entrega) || empty($entregante_id) || empty($receptor_id) || empty($estado)) {
         $_SESSION['error_message'] = "Todos los campos obligatorios deben ser completados.";
-        header('Location: editar_conocimiento.php?id=' . $conocimiento_id);
+        header('Location: ' . APP_URL . '/modules/conocimientos/pages/editar.php?id=' . $conocimiento_id);
         exit();
     }
 
@@ -100,14 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_cambios_conoc
 
         $conn->commit();
          $_SESSION['success_message'] = "Conocimiento actualizado exitosamente.";
-         header('Location: conocimientos.php');
+         header('Location: ' . APP_URL . '/modules/conocimientos/index.php');
          exit();
 
     } catch (Exception $e) {
         $conn->rollBack();
         error_log("Error al actualizar conocimiento: " . $e->getMessage());
         $_SESSION['error_message'] = "Error al actualizar el conocimiento: " . $e->getMessage();
-        header('Location: editar_conocimiento.php?id=' . $conocimiento_id);
+        header('Location: ' . APP_URL . '/modules/conocimientos/pages/editar.php?id=' . $conocimiento_id);
         exit();
     }
 }
@@ -128,7 +128,7 @@ if (isset($_GET['id'])) {
 
         if (!$conocimiento) {
             $_SESSION['error_message'] = "Conocimiento no encontrado.";
-            header('Location: conocimientos.php');
+            header('Location: ' . APP_URL . '/modules/conocimientos/index.php');
             exit();
         }
 
@@ -142,7 +142,7 @@ if (isset($_GET['id'])) {
     } catch (PDOException $e) {
         error_log("Error al cargar conocimiento para edición: " . $e->getMessage());
         $_SESSION['error_message'] = "Error al cargar el conocimiento.";
-        header('Location: conocimientos.php');
+        header('Location: ' . APP_URL . '/modules/conocimientos/index.php');
         exit();
     }
 }
@@ -171,15 +171,15 @@ $page_title = "Editar Conocimiento";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> - Sistema de Conocimientos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo APP_URL; ?>/assets/css/style.css">
 </head>
 <body>
-<?php include_once 'includes/navbar.php'; ?>
+<?php include_once __DIR__ . '/../../../includes/navbar.php'; ?>
 
 <div class="container-fluid mt-4">
   <div class="row">
     <div class="col-md-3 col-lg-2 px-0">
-      <?php include 'includes/sidebar.php'; ?>
+      <?php include __DIR__ . '/../../../includes/sidebar.php'; ?>
     </div>
     <div class="col-md-9 col-lg-10">
       <div class="container mt-4">
@@ -204,7 +204,7 @@ $page_title = "Editar Conocimiento";
         </div>
     <?php endif; ?>
 
-    <form id="conocimientoForm" action="editar_conocimiento.php?id=<?php echo htmlspecialchars($conocimiento_id); ?>" method="POST">
+    <form id="conocimientoForm" action="<?php echo APP_URL; ?>/modules/conocimientos/pages/editar.php?id=<?php echo htmlspecialchars($conocimiento_id); ?>" method="POST">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <input type="hidden" name="conocimiento_id" value="<?php echo htmlspecialchars($conocimiento_id); ?>">
 
@@ -293,12 +293,12 @@ $page_title = "Editar Conocimiento";
 
         <div class="d-grid gap-2">
             <button type="submit" class="btn btn-primary btn-lg" name="guardar_cambios_conocimiento">Guardar Cambios</button>
-            <a href="conocimientos.php" class="btn btn-secondary btn-lg">Cancelar</a>
+            <a href="<?php echo APP_URL; ?>/modules/conocimientos/index.php" class="btn btn-secondary btn-lg">Cancelar</a>
         </div>
     </form>
 </div>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/../../../includes/footer.php'; ?>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

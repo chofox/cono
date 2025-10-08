@@ -4217,3 +4217,19 @@ INNER JOI' at line 1
 [02-Oct-2025 15:11:45 America/Guatemala] verifySession: Ejecutando query con token: 624e60b357f4d8546ac49d116194ca1f4f8c7d228590fdcf41ee0662c06f5727 y user_id: 2
 [02-Oct-2025 15:11:45 America/Guatemala] verifySession: rowCount() después de ejecutar la query principal: 1
 [02-Oct-2025 15:11:45 America/Guatemala] verifySession: Sesión encontrada y válida para user_id: 2
+[07-Oct-2025 20:27:01 America/Guatemala] PDO::MYSQL_ATTR_INIT_COMMAND no está disponible; asegúrate de que la extensión pdo_mysql esté habilitada.
+[07-Oct-2025 20:27:01 America/Guatemala] Error de conexión: could not find driver
+[07-Oct-2025 20:27:01 America/Guatemala] PHP Fatal error:  Uncaught Exception: Error de conexión a la base de datos in C:\Users\Chofox\Documents\DEV\cono\config\database.php:37
+Stack trace:
+#0 C:\Users\Chofox\Documents\DEV\cono\classes\Auth.php(16): Database->getConnection()
+#1 C:\Users\Chofox\Documents\DEV\cono\login.php(9): Auth->__construct()
+#2 {main}
+  thrown in C:\Users\Chofox\Documents\DEV\cono\config\database.php on line 37
+[07-Oct-2025 20:27:01 America/Guatemala] PDO::MYSQL_ATTR_INIT_COMMAND no está disponible; asegúrate de que la extensión pdo_mysql esté habilitada.
+[07-Oct-2025 20:27:01 America/Guatemala] Error de conexión: could not find driver
+[07-Oct-2025 20:27:01 America/Guatemala] PHP Fatal error:  Uncaught Exception: Error de conexión a la base de datos in C:\Users\Chofox\Documents\DEV\cono\config\database.php:37
+Stack trace:
+#0 C:\Users\Chofox\Documents\DEV\cono\classes\Auth.php(16): Database->getConnection()
+#1 C:\Users\Chofox\Documents\DEV\cono\login.php(9): Auth->__construct()
+#2 {main}
+  thrown in C:\Users\Chofox\Documents\DEV\cono\config\database.php on line 37

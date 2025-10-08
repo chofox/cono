@@ -5,15 +5,19 @@
  */
 
 session_start();
+// Asegurar UTF-8 en todo el flujo
 header('Content-Type: text/html; charset=UTF-8');
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'includes/functions.php';
+ini_set('default_charset', 'UTF-8');
+if (function_exists('mb_internal_encoding')) { mb_internal_encoding('UTF-8'); }
+if (function_exists('mb_http_output')) { mb_http_output('UTF-8'); }
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación y permisos
 require_auth();
 if (!has_role('Técnico') && !has_role('Administrador')) {
-    header('Location: dashboard.php?error=no_permission');
+    header('Location: ' . APP_URL . '/dashboard.php?error=no_permission');
     exit();
 }
 
@@ -171,17 +175,39 @@ if ($_POST && isset($_POST['guardar_conocimiento'])) {
             
             $success_message = "Conocimiento #{$numero_conocimiento} creado exitosamente";
             
-            // Abrir PDF en nueva pestaña y redirigir a lista
-            $pdf_url = 'generar_pdf.php?id=' . (int)$conocimiento_id;
-            echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Procesando...</title>';
-            echo '<script>\n'
-               . 'try { window.open(' . json_encode($pdf_url) . ', "_blank"); } catch(e) {}\n'
-               . 'window.location.href = "conocimientos.php";\n'
-               . '</script></head><body>';
-            echo '<noscript>Documento creado. Vea el <a href="' . htmlspecialchars($pdf_url, ENT_QUOTES, 'UTF-8') . '" target="_blank">PDF</a>. '
-               . 'Luego regrese a <a href="conocimientos.php">Conocimientos</a>.</noscript>';
-            echo '</body></html>';
-            exit();
+            // Abrir PDF en nueva pesta\\u00F1a y redirigir a lista (con espera breve)
+$pdf_url = APP_URL . '/modules/conocimientos/pages/generar_pdf.php?id=' . (int)$conocimiento_id;
+$redirectUrl = APP_URL . '/modules/conocimientos/index.php';
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Procesando...</title>
+</head>
+<body>
+<script>
+try {
+    // Intentar abrir en nueva pestaña
+    window.open(<?php echo json_encode($pdf_url); ?>, "_blank");
+} catch(e) {
+    console.error("No se pudo abrir la pestaña: ", e);
+}
+// Redirigir despu&eacute;s de 1 segundo
+setTimeout(function() {
+    window.location.href = <?php echo json_encode($redirectUrl); ?>;
+}, 1000);
+</script>
+
+<noscript>
+    Documento creado.
+    Vea el <a href="<?php echo htmlspecialchars($pdf_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank">PDF</a>.
+    Luego regrese a <a href="<?php echo htmlspecialchars($redirectUrl, ENT_QUOTES, 'UTF-8'); ?>">Conocimientos</a>.
+</noscript>
+</body>
+</html>
+<?php
+exit();
             
         } catch (Exception $e) {
             if ($conn->inTransaction()) {
@@ -226,11 +252,12 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nuevo Conocimiento de Entrega - <?php echo APP_NAME; ?></title>
     
     <!-- Favicon -->
-    <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="<?php echo APP_URL; ?>/assets/img/favicon.svg" type="image/svg+xml">
 
     <!-- CSS Global -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -239,14 +266,14 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include __DIR__ . '/../../../includes/navbar.php'; ?>
     <div class="container-fluid mt-4">
       <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-          <?php include 'includes/sidebar.php'; ?>
+          <?php include __DIR__ . '/../../../includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
           <div class="container mt-2">
@@ -254,7 +281,7 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="<?php echo APP_URL; ?>/dashboard.php">Dashboard</a></li>
                 <li class="breadcrumb-item active">Nuevo Conocimiento</li>
             </ol>
         </nav>
@@ -290,11 +317,11 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
                         <form method="POST" action="" id="conocimientoForm">
                             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                             
-                            <!-- Información General -->
+                            <!-- Informaci&oacute;n General -->
                             <div class="row mb-4">
                                 <div class="col-12">
                                     <h5 class="text-primary mb-3">
-                                        <i class="fas fa-info-circle me-2"></i>Información General
+                                        <i class="fas fa-info-circle me-2"></i>Informaci&oacute;n General
                                     </h5>
                                 </div>
                                 
@@ -411,11 +438,11 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
                                         Estado del Conocimiento <span class="required">*</span>
                                     </label>
                                     <select class="form-select" id="estado" name="estado" required>
-                                        <option value="borrador">Borrador (se puede editar después)</option>
+                                        <option value="borrador">Borrador (se puede editar despu&eacute;s)</option>
                                         <option value="finalizado">Finalizado (generar PDF)</option>
                                     </select>
                                     <div class="form-text">
-                                        Si selecciona "Finalizado", se generará automáticamente el PDF
+                                        Si selecciona "Finalizado", se generar&aacute; autom&aacute;ticamente el PDF
                                     </div>
                                 </div>
                             </div>
@@ -425,7 +452,7 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
                                 <div class="col-12">
                                     <hr>
                                     <div class="d-flex justify-content-between">
-                                        <a href="dashboard.php" class="btn btn-outline-secondary">
+                                        <a href="<?php echo APP_URL; ?>/dashboard.php" class="btn btn-outline-secondary">
                                             <i class="fas fa-arrow-left me-2"></i>Cancelar
                                         </a>
                                         
@@ -522,7 +549,7 @@ if (!empty($_POST['insumos']) && is_array($_POST['insumos'])) {
             // Inicializar Select2
             $('.select2').select2({
                 theme: 'bootstrap-5',
-                placeholder: 'Seleccione una opción'
+                placeholder: 'Seleccione una opci&oacute;n'
             });
             
             // Agregar primer insumo automáticamente

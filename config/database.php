@@ -23,8 +23,13 @@ class Database {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '-06:00'", // Establecer la zona horaria de la conexión
             ];
+
+            if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET time_zone = '-06:00'"; // Establecer la zona horaria de la conexión
+            } else {
+                error_log('PDO::MYSQL_ATTR_INIT_COMMAND no está disponible; asegúrate de que la extensión pdo_mysql esté habilitada.');
+            }
             
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
         } catch(PDOException $exception) {

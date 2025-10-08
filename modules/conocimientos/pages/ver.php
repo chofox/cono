@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/classes/Auth.php';
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Requiere sesión
 require_auth();
@@ -15,7 +15,7 @@ require_auth();
 $auth = new Auth();
 $current_user = $auth->getCurrentUser();
 if (!$current_user) {
-    header('Location: login.php');
+    header('Location: ' . APP_URL . '/login.php');
     exit();
 }
 
@@ -107,24 +107,24 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalle del Conocimiento - <?php echo APP_NAME; ?></title>
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="<?php echo APP_URL; ?>/assets/img/favicon.svg" type="image/svg+xml">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="assets/css/style.css" rel="stylesheet">
+  <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-  <?php include 'includes/navbar.php'; ?>
+  <?php include __DIR__ . '/../../../includes/navbar.php'; ?>
   <div class="container-fluid mt-4">
     <div class="row">
       <div class="col-md-3 col-lg-2 px-0">
-        <?php include 'includes/sidebar.php'; ?>
+        <?php include __DIR__ . '/../../../includes/sidebar.php'; ?>
       </div>
       <div class="col-md-9 col-lg-10">
         <div class="container mt-4">
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="dashboard.php">Inicio</a></li>
-              <li class="breadcrumb-item"><a href="conocimientos.php">Conocimientos</a></li>
+              <li class="breadcrumb-item"><a href="<?php echo APP_URL; ?>/dashboard.php">Inicio</a></li>
+              <li class="breadcrumb-item"><a href="<?php echo APP_URL; ?>/modules/conocimientos/index.php">Conocimientos</a></li>
               <li class="breadcrumb-item active" aria-current="page">Detalle</li>
             </ol>
           </nav>
@@ -142,10 +142,10 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
               Conocimiento #<?php echo escape_html($conocimiento['numero_conocimiento']); ?>
             </h3>
             <div class="btn-group">
-              <a class="btn btn-outline-secondary" href="conocimientos.php">
+              <a class="btn btn-outline-secondary" href="<?php echo APP_URL; ?>/modules/conocimientos/index.php">
                 <i class="fas fa-arrow-left me-1"></i>Volver
               </a>
-              <a class="btn btn-primary" target="_blank" href="generar_pdf.php?id=<?php echo (int)$conocimiento['id']; ?>">
+              <a class="btn btn-primary" target="_blank" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/generar_pdf.php?id=<?php echo (int)$conocimiento['id']; ?>">
                 <i class="fas fa-file-pdf me-1"></i>PDF
               </a>
             </div>

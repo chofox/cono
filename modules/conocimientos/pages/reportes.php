@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación
 require_auth();
@@ -285,28 +285,28 @@ $csrf_token = generate_csrf_token();
     <title>Reportes y Historial - <?php echo APP_NAME; ?></title>
     
     <!-- Favicon -->
-    <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="<?php echo APP_URL; ?>/assets/img/favicon.svg" type="image/svg+xml">
 
     <!-- CSS Global -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo APP_URL; ?>/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include __DIR__ . '/../../../includes/navbar.php'; ?>
     <div class="container-fluid mt-4">
       <div class="row">
         <div class="col-md-3 col-lg-2 px-0">
-          <?php include 'includes/sidebar.php'; ?>
+          <?php include __DIR__ . '/../../../includes/sidebar.php'; ?>
         </div>
         <div class="col-md-9 col-lg-10">
           <div class="container mt-2">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="<?php echo APP_URL; ?>/dashboard.php">Dashboard</a></li>
                 <li class="breadcrumb-item active">Reportes y Historial</li>
             </ol>
         </nav>
@@ -538,7 +538,7 @@ $csrf_token = generate_csrf_token();
                                                     <span class="badge bg-info"><?php echo $conocimiento['total_insumos']; ?> items</span>
                                                 </td>
                                                 <td>
-                                                    <a href="generar_pdf.php?id=<?php echo $conocimiento['id']; ?>" 
+                                                    <a href="<?php echo APP_URL; ?>/modules/conocimientos/pages/generar_pdf.php?id=<?php echo $conocimiento['id']; ?>" 
                                                        class="btn btn-sm btn-outline-danger"
                                                        title="Ver PDF"
                                                        target="_blank">
@@ -631,7 +631,7 @@ $csrf_token = generate_csrf_token();
             $('#detalleModal').modal('show');
             
             $.ajax({
-                url: 'ajax/detalle_conocimiento.php',
+                url: '<?php echo APP_URL; ?>/modules/conocimientos/ajax/detalle.php',
                 method: 'GET',
                 data: { id: conocimientoId },
                 success: function(response) {
