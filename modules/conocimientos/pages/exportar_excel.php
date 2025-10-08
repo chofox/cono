@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación
 require_auth();
@@ -17,7 +17,7 @@ $current_user = $auth->getCurrentUser();
 
 // Verificar permisos
 if (!in_array($current_user['rol'], ['Administrador', 'RRHH'])) {
-    header('Location: dashboard.php');
+    header('Location: ' . APP_URL . '/dashboard.php');
     exit();
 }
 
@@ -217,7 +217,7 @@ try {
     error_log("Error exportando a Excel: " . $e->getMessage());
     
     // Redirigir con error
-    header('Location: reportes.php?error=' . urlencode('Error al exportar el reporte'));
+    header('Location: ' . APP_URL . '/modules/conocimientos/pages/reportes.php?error=' . urlencode('Error al exportar el reporte'));
     exit();
 }
 ?>
@@ -391,7 +391,7 @@ log_user_activity($current_user['id'], 'exportar_excel', 'Exportó reporte de co
 error_log("Error exportando a Excel: " . $e->getMessage());
 
 // Redirigir con error
-header('Location: reportes.php?error=' . urlencode('Error al exportar el reporte'));
+header('Location: ' . APP_URL . '/modules/conocimientos/pages/reportes.php?error=' . urlencode('Error al exportar el reporte'));
 exit();
 }
 ?>

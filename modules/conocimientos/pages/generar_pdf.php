@@ -5,16 +5,16 @@
  */
 
 session_start();
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación
 require_auth();
 
 // Verificar que se proporcione un ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: dashboard.php?error=invalid_id');
+    header('Location: ' . APP_URL . '/dashboard.php?error=invalid_id');
     exit();
 }
 
@@ -49,7 +49,7 @@ try {
     $conocimiento = $stmt->fetch();
     
     if (!$conocimiento) {
-        header('Location: dashboard.php?error=not_found');
+        header('Location: ' . APP_URL . '/dashboard.php?error=not_found');
         exit();
     }
     
@@ -58,7 +58,7 @@ try {
         $conocimiento['entregante_id'] != $current_user['id'] && 
         $conocimiento['receptor_id'] != $current_user['id'] &&
         $conocimiento['creado_por'] != $current_user['id']) {
-        header('Location: dashboard.php?error=no_permission');
+        header('Location: ' . APP_URL . '/dashboard.php?error=no_permission');
         exit();
     }
     
@@ -81,7 +81,7 @@ try {
     
 } catch (Exception $e) {
     error_log("Error cargando conocimiento: " . $e->getMessage());
-    header('Location: dashboard.php?error=load_error');
+    header('Location: ' . APP_URL . '/dashboard.php?error=load_error');
     exit();
 }
 

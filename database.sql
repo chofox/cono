@@ -576,3 +576,144 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- --------------------------------------------------------
+--
+-- Tablas del módulo de mantenimiento de equipos
+--
+
+CREATE TABLE `equipos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `codigo` varchar(50) COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `descripcion` varchar(255) COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `serie` varchar(100) COLLATE utf8mb4_spanish2_ci DEFAULT NULL,
+  `ubicacion` varchar(150) COLLATE utf8mb4_spanish2_ci DEFAULT NULL,
+  `usuario_referencia` varchar(150) COLLATE utf8mb4_spanish2_ci DEFAULT NULL,
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_equipos_codigo` (`codigo`),
+  UNIQUE KEY `idx_equipos_serie` (`serie`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `mantenimientos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `folio` varchar(30) COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `public_token` varchar(40) COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `equipo_id` int NOT NULL,
+  `tipo_mantenimiento` enum('preventivo','correctivo') COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `estado` enum('en_recepcion','en_diagnostico','en_mantenimiento','listo_para_entrega','entregado','cerrado') COLLATE utf8mb4_spanish2_ci NOT NULL DEFAULT 'en_recepcion',
+  `recepcionista_id` int NOT NULL,
+  `tecnico_id` int DEFAULT NULL,
+  `supervisor_id` int DEFAULT NULL,
+  `fecha_recepcion` date NOT NULL,
+  `observaciones_recepcion` text COLLATE utf8mb4_spanish2_ci,
+  `usuario_entrega` varchar(150) COLLATE utf8mb4_spanish2_ci DEFAULT NULL,
+  `fecha_inicio` datetime DEFAULT NULL,
+  `fecha_fin` datetime DEFAULT NULL,
+  `duracion_horas` decimal(8,2) DEFAULT NULL,
+  `observaciones_finales` text COLLATE utf8mb4_spanish2_ci,
+  `costo_mano_obra` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `costo_repuestos` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `costo_total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_mantenimientos_folio` (`folio`),
+  UNIQUE KEY `uniq_mantenimientos_token` (`public_token`),
+  KEY `idx_mantenimientos_equipo` (`equipo_id`),
+  KEY `idx_mantenimientos_tecnico` (`tecnico_id`),
+  KEY `idx_mantenimientos_supervisor` (`supervisor_id`),
+  CONSTRAINT `fk_mant_equipo` FOREIGN KEY (`equipo_id`) REFERENCES `equipos` (`id`),
+  CONSTRAINT `fk_mant_tecnico` FOREIGN KEY (`tecnico_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `fk_mant_supervisor` FOREIGN KEY (`supervisor_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `fk_mant_recepcionista` FOREIGN KEY (`recepcionista_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `diagnosticos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `tecnico_id` int NOT NULL,
+  `descripcion_falla` text COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `causa` text COLLATE utf8mb4_spanish2_ci,
+  `accion_recomendada` text COLLATE utf8mb4_spanish2_ci,
+  `fecha_diagnostico` date NOT NULL,
+  `aprobado_por` int DEFAULT NULL,
+  `observaciones_supervisor` text COLLATE utf8mb4_spanish2_ci,
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_diagnosticos_mantenimiento` (`mantenimiento_id`),
+  CONSTRAINT `fk_diag_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`),
+  CONSTRAINT `fk_diag_tecnico` FOREIGN KEY (`tecnico_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `fk_diag_supervisor` FOREIGN KEY (`aprobado_por`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `mantenimiento_repuestos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `insumo_id` int NOT NULL,
+  `cantidad` decimal(10,2) NOT NULL DEFAULT 1.00,
+  `observaciones` text COLLATE utf8mb4_spanish2_ci,
+  PRIMARY KEY (`id`),
+  KEY `idx_repuestos_mantenimiento` (`mantenimiento_id`),
+  KEY `idx_repuestos_insumo` (`insumo_id`),
+  CONSTRAINT `fk_repuestos_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`),
+  CONSTRAINT `fk_repuestos_insumo` FOREIGN KEY (`insumo_id`) REFERENCES `insumos` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `mantenimiento_conocimientos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `conocimiento_id` int NOT NULL,
+  `creado_por` int NOT NULL,
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_actualizacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_mantenimiento_conocimiento` (`mantenimiento_id`),
+  UNIQUE KEY `uniq_conocimiento_mantenimiento` (`conocimiento_id`),
+  CONSTRAINT `fk_mantenimiento_conocimiento_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_mantenimiento_conocimiento_conocimiento` FOREIGN KEY (`conocimiento_id`) REFERENCES `conocimientos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_mantenimiento_conocimiento_usuario` FOREIGN KEY (`creado_por`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `seguimientos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `supervisor_id` int NOT NULL,
+  `descripcion` text COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `fecha_seguimiento` datetime NOT NULL,
+  `estado` enum('en_mantenimiento','listo_para_entrega','entregado','cerrado') COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_seguimientos_mantenimiento` (`mantenimiento_id`),
+  CONSTRAINT `fk_seguimientos_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`),
+  CONSTRAINT `fk_seguimientos_supervisor` FOREIGN KEY (`supervisor_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `entregas` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `fecha_entrega` datetime NOT NULL,
+  `observaciones` text COLLATE utf8mb4_spanish2_ci,
+  `entregado_por` int NOT NULL,
+  `recibido_por` varchar(150) COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `qr_code_url` varchar(255) COLLATE utf8mb4_spanish2_ci DEFAULT NULL,
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_entregas_mantenimiento` (`mantenimiento_id`),
+  CONSTRAINT `fk_entregas_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`),
+  CONSTRAINT `fk_entregas_usuario` FOREIGN KEY (`entregado_por`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
+
+CREATE TABLE `mantenimiento_estados_historial` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `mantenimiento_id` int NOT NULL,
+  `estado` enum('en_recepcion','en_diagnostico','en_mantenimiento','listo_para_entrega','entregado','cerrado') COLLATE utf8mb4_spanish2_ci NOT NULL,
+  `comentario` text COLLATE utf8mb4_spanish2_ci,
+  `usuario_id` int NOT NULL,
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_historial_mantenimiento` (`mantenimiento_id`),
+  CONSTRAINT `fk_historial_mantenimiento` FOREIGN KEY (`mantenimiento_id`) REFERENCES `mantenimientos` (`id`),
+  CONSTRAINT `fk_historial_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;

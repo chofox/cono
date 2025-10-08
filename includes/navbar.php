@@ -4,88 +4,152 @@ if (!isset($current_user)) {
     $current_user = [
         'nombre_completo' => 'Invitado',
         'rol' => 'Invitado',
-        'id' => 0
+        'id' => 0,
     ];
 }
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="dashboard.php">
-      <i class="fas fa-clipboard-list me-2"></i>
-      Sistema de Conocimientos
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="dashboard.php">
-            <i class="fas fa-home me-2"></i>Inicio
-          </a>
-        </li>
-
-        <?php if (($current_user['rol'] ?? '') === 'Técnico' || ($current_user['rol'] ?? '') === 'Administrador'): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="nuevo_conocimiento.php">
-              <i class="fas fa-file-alt me-2"></i>Nuevo Conocimiento
+<nav class="navbar is-spaced is-primary" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item is-uppercase has-text-weight-semibold" href="<?php echo APP_URL; ?>/dashboard.php">
+                <span class="icon-text">
+                    <span class="icon"><i class="fas fa-clipboard-list"></i></span>
+                    <span>Sistema de Conocimiento</span>
+                </span>
             </a>
-          </li>
-        <?php endif; ?>
 
-        <li class="nav-item">
-          <a class="nav-link" href="reportes.php">
-            <i class="fas fa-chart-line me-2"></i>Reportes
-          </a>
-        </li>
-
-        <?php if (($current_user['rol'] ?? '') === 'Administrador'): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="receptores.php">
-              <i class="fas fa-user-friends me-2"></i>Receptores
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="app-navbar">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
             </a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
-               data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fas fa-cog me-2"></i>Administración
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-              <li><a class="dropdown-item" href="usuarios.php"><i class="fas fa-users me-2"></i>Usuarios</a></li>
-              <li><a class="dropdown-item" href="distritos.php"><i class="fas fa-map-marked-alt me-2"></i>Distritos</a></li>
-              <li><a class="dropdown-item" href="puestos.php"><i class="fas fa-briefcase me-2"></i>Puestos</a></li>
-              <li><a class="dropdown-item" href="insumos.php"><i class="fas fa-boxes me-2"></i>Insumos</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="configuracion.php"><i class="fas fa-cogs me-2"></i>Configuración</a></li>
-            </ul>
-          </li>
-        <?php endif; ?>
-      </ul>
+        </div>
 
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle me-2"></i>
-            <?php echo escape_html($current_user['nombre_completo'] ?? ''); ?>
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <?php if (($current_user['rol'] ?? 'Invitado') !== 'Invitado'): ?>
-              <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user me-2"></i>Mi Perfil</a></li>
-              <li><a class="dropdown-item" href="change_password.php"><i class="fas fa-key me-2"></i>Cambiar Contraseña</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
-            <?php else: ?>
-              <li><a class="dropdown-item" href="login.php"><i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión</a></li>
-            <?php endif; ?>
-          </ul>
-        </li>
-      </ul>
+        <div id="app-navbar" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="<?php echo APP_URL; ?>/dashboard.php">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-home"></i></span>
+                        <span>Inicio</span>
+                    </span>
+                </a>
+
+                <?php if (($current_user['rol'] ?? '') === 'Técnico' || ($current_user['rol'] ?? '') === 'Administrador'): ?>
+                    <a class="navbar-item" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/crear.php">
+                        <span class="icon-text">
+                            <span class="icon"><i class="fas fa-file-alt"></i></span>
+                            <span>Nuevo conocimiento</span>
+                        </span>
+                    </a>
+                <?php endif; ?>
+
+                <a class="navbar-item" href="<?php echo APP_URL; ?>/modules/conocimientos/pages/reportes.php">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Reportes</span>
+                    </span>
+                </a>
+
+                <?php if (($current_user['rol'] ?? '') === 'Administrador'): ?>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            <span class="icon-text">
+                                <span class="icon"><i class="fas fa-cog"></i></span>
+                                <span>Administración</span>
+                            </span>
+                        </a>
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/usuarios.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-users"></i></span>
+                                    <span>Usuarios</span>
+                                </span>
+                            </a>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/distritos.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-map-marked-alt"></i></span>
+                                    <span>Distritos</span>
+                                </span>
+                            </a>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/puestos.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-briefcase"></i></span>
+                                    <span>Puestos</span>
+                                </span>
+                            </a>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/insumos.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-boxes"></i></span>
+                                    <span>Insumos</span>
+                                </span>
+                            </a>
+                            <hr class="navbar-divider">
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/configuracion.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-cogs"></i></span>
+                                    <span>Configuración</span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        <span class="icon-text">
+                            <span class="icon"><i class="fas fa-user-circle"></i></span>
+                            <span><?php echo escape_html($current_user['nombre_completo'] ?? ''); ?></span>
+                        </span>
+                    </a>
+                    <div class="navbar-dropdown is-right">
+                        <?php if (($current_user['rol'] ?? 'Invitado') !== 'Invitado'): ?>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/profile.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-user"></i></span>
+                                    <span>Mi perfil</span>
+                                </span>
+                            </a>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/change_password.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-key"></i></span>
+                                    <span>Cambiar contraseña</span>
+                                </span>
+                            </a>
+                            <hr class="navbar-divider">
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/logout.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                                    <span>Cerrar sesión</span>
+                                </span>
+                            </a>
+                        <?php else: ?>
+                            <a class="navbar-item" href="<?php echo APP_URL; ?>/login.php">
+                                <span class="icon-text">
+                                    <span class="icon"><i class="fas fa-sign-in-alt"></i></span>
+                                    <span>Iniciar sesión</span>
+                                </span>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  </nav>
+</nav>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const burger = document.querySelector('.navbar-burger');
+        const target = burger ? burger.getAttribute('data-target') : null;
+        const menu = target ? document.getElementById(target) : null;
+        if (burger && menu) {
+            burger.addEventListener('click', () => {
+                burger.classList.toggle('is-active');
+                menu.classList.toggle('is-active');
+            });
+        }
+    });
+</script>

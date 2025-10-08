@@ -54,15 +54,41 @@ function has_role($required_role) {
     if (!is_logged_in()) {
         return false;
     }
-    
+
     $user_role = $_SESSION['user_role'];
-    
+
     // El administrador tiene acceso a todo
     if ($user_role === 'Administrador') {
         return true;
     }
-    
+
     return $user_role === $required_role;
+}
+
+/**
+ * Verifica si el usuario tiene alguno de los roles especificados.
+ */
+function has_any_role(array $roles): bool {
+    if (!is_logged_in()) {
+        return false;
+    }
+
+    $user_role = $_SESSION['user_role'];
+    if ($user_role === 'Administrador') {
+        return true;
+    }
+
+    return in_array($user_role, $roles, true);
+}
+
+/**
+ * Requiere al menos uno de los roles indicados para acceder a un recurso.
+ */
+function require_any_role(array $roles): void {
+    if (!has_any_role($roles)) {
+        header('Location: dashboard.php?error=no_permission');
+        exit();
+    }
 }
 
 /**
@@ -161,18 +187,28 @@ function log_user_activity($user_id, $action, $details = '') {
  * Función para mostrar mensajes flash
  */
 function show_flash_message() {
-    if (isset($_SESSION['flash_message'])) {
-        $message = $_SESSION['flash_message'];
-        $type = $_SESSION['flash_type'] ?? 'info';
-        
-        echo "<div class='alert alert-{$type} alert-dismissible fade show' role='alert'>
-                {$message}
-                <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
-              </div>";
-        
-        unset($_SESSION['flash_message']);
-        unset($_SESSION['flash_type']);
+    if (!isset($_SESSION['flash_message'])) {
+        return;
     }
+
+    $message = $_SESSION['flash_message'];
+    $type = $_SESSION['flash_type'] ?? 'info';
+
+    $classMap = [
+        'success' => 'is-success',
+        'danger' => 'is-danger',
+        'warning' => 'is-warning',
+        'info' => 'is-info',
+    ];
+
+    $bulmaClass = $classMap[$type] ?? 'is-info';
+
+    echo "<div class='notification {$bulmaClass}'>" .
+        "<button class='delete' onclick=\"this.parentElement.remove()\" aria-label='Cerrar notificación'></button>" .
+        $message .
+        "</div>";
+
+    unset($_SESSION['flash_message'], $_SESSION['flash_type']);
 }
 
 /**
@@ -317,26 +353,6 @@ function debug_log($message, $level = 'INFO') {
 }
 
 /**
- * Función para obtener usuarios por rol
- */
-function get_users_by_role($role) {
-    try {
-        $database = new Database();
-        $conn = $database->getConnection();
-
-        $query = "SELECT u.id, u.nombre_completo FROM usuarios u JOIN roles r ON u.rol_id = r.id WHERE r.nombre = :role ORDER BY u.nombre_completo";
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':role', $role);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Error obteniendo usuarios por rol ({$role}): " . $e->getMessage());
-        return [];
-    }
-}
-
-/**
  * Función para obtener todos los insumos
  */
 function get_all_insumos() {
@@ -375,6 +391,74 @@ function get_all_receptores() {
     $stmt = $conn->prepare($query);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Obtiene usuarios por rol del sistema principal.
+ */
+function get_users_by_role(string $role): array {
+    try {
+        $database = new Database();
+        $conn = $database->getConnection();
+
+        $query = "SELECT u.id, u.nombre_completo
+                  FROM usuarios u
+                  INNER JOIN roles r ON u.rol_id = r.id
+                  WHERE r.nombre = :rol AND u.activo = 1
+                  ORDER BY u.nombre_completo";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':rol', $role);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log('Error obteniendo usuarios por rol: ' . $e->getMessage());
+        return [];
+    }
+}
+
+function mantenimiento_estados(): array {
+    return [
+        'en_recepcion' => 'En recepción',
+        'en_diagnostico' => 'En diagnóstico',
+        'en_mantenimiento' => 'En mantenimiento',
+        'listo_para_entrega' => 'Listo para entrega',
+        'entregado' => 'Entregado',
+        'cerrado' => 'Cerrado',
+    ];
+}
+
+function mantenimiento_estado_label(string $estado): string {
+    $estados = mantenimiento_estados();
+    return $estados[$estado] ?? ucfirst(str_replace('_', ' ', $estado));
+}
+
+function mantenimiento_estado_badge_class(string $estado): string {
+    return match ($estado) {
+        'en_recepcion' => 'is-link is-light',
+        'en_diagnostico' => 'is-info',
+        'en_mantenimiento' => 'is-warning',
+        'listo_para_entrega' => 'is-primary',
+        'entregado' => 'is-success',
+        'cerrado' => 'is-dark',
+        default => 'is-light',
+    };
+}
+
+function mantenimiento_tipo_options(): array {
+    return [
+        'preventivo' => 'Preventivo',
+        'correctivo' => 'Correctivo',
+    ];
+}
+
+function generar_url_estado_publico(string $token): string {
+    return APP_URL . '/modules/mantenimiento/pages/estado.php?token=' . urlencode($token);
+}
+
+function generar_qr_url(string $token): string {
+    $url = generar_url_estado_publico($token);
+    return 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' . urlencode($url);
 }
 
 ?>

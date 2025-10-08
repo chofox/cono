@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once '../config/database.php';
-require_once '../classes/Auth.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../classes/Auth.php';
+require_once __DIR__ . '/../../../includes/functions.php';
 
 // Verificar autenticación
 require_auth();
@@ -271,7 +271,7 @@ try {
 
 <div class="row mt-3">
     <div class="col-12 text-center">
-        <a href="generar_pdf.php?id=<?php echo $conocimiento['id']; ?>" 
+        <a href="<?php echo APP_URL; ?>/modules/conocimientos/pages/generar_pdf.php?id=<?php echo $conocimiento['id']; ?>" 
            class="btn btn-danger me-2"
            target="_blank">
             <i class="fas fa-file-pdf me-2"></i>Ver PDF
