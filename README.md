@@ -10,7 +10,9 @@ Sistema web para la gestión y registro de entregas de insumos en la Dirección 
 - **Registro de entregas** con selección dinámica de insumos
 - **Generación de PDFs** con formato oficial
 - **Sistema de reportes** con filtros avanzados y exportación a Excel
+- **Módulo integral de mantenimiento** para recepción, diagnóstico, ejecución, entrega y seguimiento de equipos institucionales
 - **Dashboard responsivo** con estadísticas en tiempo real
+- **Interfaz moderna** basada en Bulma con navegación unificada para módulos y reportes
 
 ## 📋 Requisitos del Sistema
 
@@ -18,6 +20,31 @@ Sistema web para la gestión y registro de entregas de insumos en la Dirección 
 - **MySQL 5.7+** o **MariaDB 10.2+**
 - **Servidor web** (Apache/Nginx)
 - **TCPDF Library** (incluida en el proyecto)
+
+### ✅ Verificación rápida del entorno
+
+Antes de intentar iniciar sesión, valida que tu entorno tenga todas las extensiones necesarias y que el servidor responda:
+
+1. **Comprobar extensiones PHP**
+   ```bash
+   php -m | grep -E "pdo_mysql|mbstring"
+   ```
+   Si `pdo_mysql` no aparece, habilita la extensión en tu `php.ini` (en Windows, normalmente quitando el `;` en `extension=pdo_mysql`).
+
+2. **Probar conexión a base de datos**
+   ```bash
+   php scripts/healthcheck.php
+   ```
+   Este script (incluido en el repositorio) confirma credenciales, zona horaria y estado de sesiones.
+
+3. **Levantar servidor de pruebas**
+   ```bash
+   php -S localhost:8000 -t public/
+   ```
+   Luego visita `http://localhost:8000/` en tu navegador. Si usas Apache/Nginx, asegúrate de apuntar el DocumentRoot a la carpeta del proyecto.
+
+4. **Revisar archivos de log**
+   Los errores críticos se registran en `error.log`. Si encuentras `PDO::MYSQL_ATTR_INIT_COMMAND` asegúrate de haber completado el paso 1.
 
 ## 🛠️ Instalación
 
@@ -98,19 +125,37 @@ cono/
 │   └── Auth.php              # Clase de autenticación
 ├── includes/
 │   └── functions.php         # Funciones utilitarias
-├── ajax/
-│   └── detalle_conocimiento.php  # Endpoint para detalles
 ├── tcpdf/                    # Librería TCPDF
 ├── database.sql              # Esquema de base de datos
 ├── login.php                 # Página de login
 ├── logout.php                # Cerrar sesión
 ├── dashboard.php             # Panel principal
-├── nuevo_conocimiento.php    # Registro de entregas
 ├── usuarios.php              # Gestión de usuarios
 ├── insumos.php              # Gestión de insumos
-├── reportes.php             # Sistema de reportes
-├── generar_pdf.php          # Generación de PDFs
-├── exportar_excel.php       # Exportación a Excel
+├── modules/
+│   ├── conocimientos/
+│   │   ├── index.php                # Listado principal y filtros del módulo
+│   │   ├── ajax/
+│   │   │   └── detalle.php          # Endpoint AJAX para el modal de detalle
+│   │   └── pages/
+│   │       ├── crear.php            # Registro de nuevas entregas
+│   │       ├── editar.php           # Edición de conocimientos en borrador
+│   │       ├── ver.php              # Vista detallada
+│   │       ├── reportes.php         # Consolidados y filtros avanzados
+│   │       ├── exportar_excel.php   # Exportación a Excel
+│   │       └── generar_pdf.php      # Generación de PDFs
+│   └── mantenimiento/
+│       ├── index.php                # Panel integral de mantenimientos
+│       ├── pages/
+│       │   ├── recepcion.php        # Registro de recepción de equipos
+│       │   ├── diagnostico.php      # Registro del diagnóstico técnico
+│       │   ├── ejecucion.php        # Ejecución y control del mantenimiento
+│       │   ├── entrega.php          # Entrega de equipos y cierre
+│       │   ├── seguimiento.php      # Seguimientos post-servicio
+│       │   ├── estado.php           # Consulta pública del estado del mantenimiento
+│       │   └── reportes.php         # Reportes y exportaciones del módulo
+│       └── services/
+│           └── MantenimientoRepository.php  # Acceso a datos del módulo
 └── README.md                # Este archivo
 ```
 
@@ -158,7 +203,16 @@ cono/
 - Estadísticas en tiempo real
 - Gráficos de entregas mensuales
 - Accesos rápidos por rol
-- Actividad reciente
+
+## 🛠️ Módulo de Mantenimiento de Equipos
+
+- **Recepción**: registro de ingreso, generación automática de folio y QR público, asignación opcional de técnico.
+- **Diagnóstico**: asignación de técnico responsable, captura de falla, causa, acción recomendada y aprobación del supervisor.
+- **Ejecución**: control de inicio/fin, horas empleadas, costos de mano de obra y repuestos, bitácora automática de estados.
+- **Entrega**: emisión de comprobante con observaciones, estado final (entregado/cerrado) y seguimiento del QR por el usuario.
+- **Seguimiento**: registro post-servicio por parte de supervisores, con actualización del estado y trazabilidad en la línea de tiempo.
+- **Consulta pública**: página `estado.php` que permite a cualquier usuario verificar el avance con folio o código QR.
+- **Reportes**: exportación a PDF/Excel por técnico, estado, fechas o tipo de mantenimiento desde `reporte.php`.
 
 ## 🔧 Configuración Avanzada
 
