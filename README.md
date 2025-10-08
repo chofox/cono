@@ -21,6 +21,31 @@ Sistema web para la gestión y registro de entregas de insumos en la Dirección 
 - **Servidor web** (Apache/Nginx)
 - **TCPDF Library** (incluida en el proyecto)
 
+### ✅ Verificación rápida del entorno
+
+Antes de intentar iniciar sesión, valida que tu entorno tenga todas las extensiones necesarias y que el servidor responda:
+
+1. **Comprobar extensiones PHP**
+   ```bash
+   php -m | grep -E "pdo_mysql|mbstring"
+   ```
+   Si `pdo_mysql` no aparece, habilita la extensión en tu `php.ini` (en Windows, normalmente quitando el `;` en `extension=pdo_mysql`).
+
+2. **Probar conexión a base de datos**
+   ```bash
+   php scripts/healthcheck.php
+   ```
+   Este script (incluido en el repositorio) confirma credenciales, zona horaria y estado de sesiones.
+
+3. **Levantar servidor de pruebas**
+   ```bash
+   php -S localhost:8000 -t public/
+   ```
+   Luego visita `http://localhost:8000/` en tu navegador. Si usas Apache/Nginx, asegúrate de apuntar el DocumentRoot a la carpeta del proyecto.
+
+4. **Revisar archivos de log**
+   Los errores críticos se registran en `error.log`. Si encuentras `PDO::MYSQL_ATTR_INIT_COMMAND` asegúrate de haber completado el paso 1.
+
 ## 🛠️ Instalación
 
 ### 1. Configuración de la Base de Datos
